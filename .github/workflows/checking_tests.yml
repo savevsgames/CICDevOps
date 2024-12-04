@@ -24,5 +24,8 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Start project
+        run: pull-test-start
+
       - name: Run vite tests
         run: npm run test
