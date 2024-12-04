@@ -1,0 +1,28 @@
+name: Deploy To Render
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    name: Deploy to Render
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test
+        run: |
+          npm install
+          npm run build
+          npm run test
+
+      - name: Deploy
+        # Only run this if the branch is main
+        if: github.ref == 'refs/heads/main'
+        env:
+          deploy_url: ${{ secrets.RENDER_URL }}
+        # This is the command that will be run on Render to start a deploy using the webhook URL from Render
+        run: |
+          curl "$deploy_url"

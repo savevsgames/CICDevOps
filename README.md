@@ -9,6 +9,8 @@
 
 ## **Description**
 
+**_LIVE DEMO_**: [RENDER DEPOLOY LINK (expect a wait of around 2-minutes for demo servers to start)](https://cicdevops.onrender.com)
+
 The Coding Quiz App is a full-stack web application designed to test your coding knowledge through interactive quizzes. The application ensures a seamless and engaging user experience, leveraging a robust backend and a responsive frontend.
 
 This version of the application integrates Continuous Integration (CI) and Continuous Deployment (CD) using **GitHub Actions** and **Render**, providing automated testing and deployment pipelines for quality assurance and efficiency.
