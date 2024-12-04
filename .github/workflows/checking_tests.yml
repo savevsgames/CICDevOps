@@ -24,5 +24,6 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Run and test project
-        run: npm run render-test-start
+      - name: Start server
+        run: npm run deploy-test-start
+

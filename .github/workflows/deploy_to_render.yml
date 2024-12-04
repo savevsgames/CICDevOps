@@ -14,9 +14,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Test
         run: |
-          npm install
           npm run render-build
-          npm run render-test-start
+          npm run deploy-test-start
 
       - name: Deploy
         # Only run this if the branch is main
