@@ -13,6 +13,9 @@ The Coding Quiz App is a full-stack web application designed to test your coding
 
 This version of the application integrates Continuous Integration (CI) and Continuous Deployment (CD) using **GitHub Actions** and **Render**, providing automated testing and deployment pipelines for quality assurance and efficiency.
 
+![Quiz Screenshot #1](./github_assets/quiz_screenshot_01.png)
+![Quiz Screenshot #2](./github_assets/quiz_screenshot_02.png)
+
 ---
 
 ## **Table of Contents**
