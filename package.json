@@ -9,7 +9,8 @@
     "install": "cd server && npm i && cd ../client && npm i",
     "build": "concurrently \"cd server && npm run build\" \"cd client && npm run build\"",
     "render-build": "npm install && npm run build",
-    "render-test-start": "concurrently \"cd server && npm run start\" \"npx cypress run --browser electron\"",
+    "pull-test-start": "cd server && npm run start",
+    "deploy-test-start": "concurrently \"cd server && npm run start\" \"npx cypress run --browser electron\"",
     "test": "npx cypress run --browser electron",
     "test-component": "npx cypress run --component",
     "test-gui": "npx cypress open"
