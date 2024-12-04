@@ -24,6 +24,14 @@ jobs:
       - name: Build project
         run: npm run build
 
+      # Start the server in the background
       - name: Start server
-        run: npm run deploy-test-start
+        run: |
+          npm run start &
+          npx wait-on http://localhost:3001
 
+      - name: Run cypress tests
+        run: npm run test
+
+      - name: Stop server
+        run: kill $(lsof -t -i:3001) || true
