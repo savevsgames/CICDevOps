@@ -15,8 +15,8 @@ jobs:
       - name: Test
         run: |
           npm install
-          npm run build
-          npm run test
+          npm run render-build
+          npm run render-test-start
 
       - name: Deploy
         # Only run this if the branch is main
