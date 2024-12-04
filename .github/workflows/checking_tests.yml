@@ -24,5 +24,5 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Run vite tests
-        run: npm run test
+      - name: Run and test project
+        run: npm run render-test-start
