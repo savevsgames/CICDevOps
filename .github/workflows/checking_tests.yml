@@ -26,3 +26,4 @@ jobs:
 
       - name: Run and test project
         run: npm run render-test-start
+
