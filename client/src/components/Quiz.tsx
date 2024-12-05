@@ -93,7 +93,7 @@ const Quiz = () => {
           >
             Take A New Quiz
           </button>
-          I mean, you're pretty much a Python expert now...
+          I mean, you're pretty much a Python expert now, right?
         </div>
       );
     }
