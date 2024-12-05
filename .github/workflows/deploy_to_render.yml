@@ -14,6 +14,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Ensure the source branch is develop
+        run: |
+          if [[ "${{ github.event.pull_request.head.ref }}" != "develop" ]]; then
+            echo "Pull requests to main must come from the develop branch. Exiting."
+            exit 1
+          fi
+
       - name: Build and Install for Render
         run: npm run render-build
 
