@@ -24,18 +24,6 @@ jobs:
       - name: Build and Install for Render
         run: npm run render-build
 
-      # Start the server in the background
-      - name: Start server
-        run: |
-          npm run start &
-          npx wait-on http://localhost:3001
-
-      - name: Run cypress tests
-        run: npm run test
-
-      - name: Stop server
-        run: kill $(lsof -t -i:3001) || true
-
       - name: Deploy
         # Only run this if the branch is main
         if: github.ref == 'refs/heads/main'
@@ -44,3 +32,12 @@ jobs:
         # This is the command that will be run on Render to start a deploy using the webhook URL from Render
         run: |
           curl "$deploy_url"
+
+      - name: Wait for Render Deployment
+        run: |
+          sleep 120 # Wait for Render to deploy the app ~2mins (might need to change)
+
+      - name: Run e2e Cypress Tests on Render
+        env:
+          CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
+        run: npx cypress run --browser electron
