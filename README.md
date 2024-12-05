@@ -159,7 +159,7 @@ Contributions are welcome! Please fork the repository and submit a Pull Request 
 
 ## **Questions**
 
-For any questions, feel free to contact me:
+For any questions create an issue or feel free to contact me:
 
 - GitHub: [savevsgames](https://github.com/savevsgames)
 - Email: [gregcbarker@gmail.com](mailto:gregcbarker@gmail.com)
