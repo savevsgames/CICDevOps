@@ -23,6 +23,8 @@ This version of the application integrates Continuous Integration (CI) and Conti
 
 ![Quiz Screenshot #3](./github_assets/quiz_screenshot_02.png)
 
+**GitHub Actions for Testing & Render Deployment before Merge is Allowed**
+
 ![CICD Testing Screenshot #1](./github_assets/cicd_screenshot_02.png)
 
 ![CICD Testing Screenshot #2](./github_assets/cicd_screenshot_03.png)
