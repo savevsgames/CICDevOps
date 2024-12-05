@@ -19,9 +19,15 @@ This version of the application integrates Continuous Integration (CI) and Conti
 
 ![Quiz Screenshot #2](./github_assets/quiz_screenshot_02.png)
 
-![CICD Testing Screenshot #1](./github_assets/cicd_screenshot_01.png)
+![CICD Testing Screenshot #1](./github_assets/cicd_screenshot_02.png)
 
-![CICD Testing Screenshot #2](./github_assets/cicd_screenshot_02.png)
+![CICD Testing Screenshot #2](./github_assets/cicd_screenshot_03.png)
+
+![CICD Testing Screenshot #3](./github_assets/cicd_screenshot_04.png)
+
+![CICD Testing Screenshot #4](./github_assets/cicd_screenshot_05.png)
+
+![CICD Testing Screenshot #5](./github_assets/cicd_screenshot_06.png)
 
 ---
 
