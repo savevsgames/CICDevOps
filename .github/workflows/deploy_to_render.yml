@@ -11,7 +11,12 @@ jobs:
     name: Deploy to Render
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build and Install for Render
+        run: npm run render-build
+
       # Start the server in the background
       - name: Start server
         run: |
