@@ -35,6 +35,12 @@ This version of the application integrates Continuous Integration (CI) and Conti
 
 ![CICD Testing Screenshot #5](./github_assets/cicd_screenshot_06.png)
 
+**main Branch Can Only be Merged from develop** - Attempting to push from a feature branch will fail
+
+![CICD Testing Screenshot #6](./github_assets/cicd_screenshot_07.png)
+
+![CICD Testing Screenshot #7](./github_assets/cicd_screenshot_08.png)
+
 ---
 
 ## **Table of Contents**
