@@ -112,7 +112,7 @@ const Quiz = () => {
   const currentQuestion = questions[currentQuestionIndex];
 
   return (
-    <div className="card p-4" style={{ backgroundColor: "#98A9B3" }}>
+    <div className="card p-4">
       <h2>{currentQuestion.question}</h2>
       <div className="mt-3">
         {currentQuestion.answers.map((answer, index) => (
