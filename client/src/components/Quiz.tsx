@@ -60,20 +60,42 @@ const Quiz = () => {
   }
 
   if (quizCompleted) {
-    return (
-      <div className="card p-4 text-center">
-        <h2>Quiz Completed</h2>
-        <div className="alert alert-success">
-          Your score: {score}/{questions.length}
+    const yourScore = score;
+    if (yourScore < 5) {
+      return (
+        <div className="card p-4 text-center">
+          <h2>Quiz Completed</h2>
+          <div className="alert alert-danger">
+            Your score: {score}/{questions.length}
+          </div>
+          You're Going To Want To...
+          <button
+            className="btn btn-primary d-inline-block mx-auto"
+            onClick={handleStartQuiz}
+          >
+            Try That Again
+          </button>
+          ... I'm just guessing...
         </div>
-        <button
-          className="btn btn-primary d-inline-block mx-auto"
-          onClick={handleStartQuiz}
-        >
-          Take New Quiz
-        </button>
-      </div>
-    );
+      );
+    } else {
+      return (
+        <div className="card p-4 text-center">
+          <h2>Quiz Completed</h2>
+          <div className="alert alert-success">
+            Your score: {score}/{questions.length}
+          </div>
+          Good Job! Do you think you even need to
+          <button
+            className="btn btn-primary d-inline-block mx-auto"
+            onClick={handleStartQuiz}
+          >
+            Take A New Quiz
+          </button>
+          ? I mean, you're pretty much a Python expert now...
+        </div>
+      );
+    }
   }
 
   if (questions.length === 0) {

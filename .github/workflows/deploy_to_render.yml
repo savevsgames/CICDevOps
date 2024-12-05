@@ -12,10 +12,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Test
+      # Start the server in the background
+      - name: Start server
         run: |
-          npm run render-build
-          npm run deploy-test-start
+          npm run start &
+          npx wait-on http://localhost:3001
+
+      - name: Run cypress tests
+        run: npm run test
+
+      - name: Stop server
+        run: kill $(lsof -t -i:3001) || true
 
       - name: Deploy
         # Only run this if the branch is main
