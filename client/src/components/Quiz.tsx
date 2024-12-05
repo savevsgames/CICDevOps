@@ -49,11 +49,12 @@ const Quiz = () => {
       <div className="p-4 text-center">
         <h1>💫 WELCOME TO MY PYTHON QUIZ APP 💫</h1>
         <h3>featuring auto-deployment with e2e and component testing</h3>
+        Do you feel lucky/prepared enough? ...{" "}
         <button
           className="btn btn-primary d-inline-block mx-auto"
           onClick={handleStartQuiz}
         >
-          Start Quiz
+          Start Quiz!
         </button>
       </div>
     );
