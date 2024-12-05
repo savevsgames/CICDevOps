@@ -86,14 +86,14 @@ const Quiz = () => {
           <div className="alert alert-success">
             Your score: {score}/{questions.length}
           </div>
-          Good Job! Do you think you even need to
+          Good Job! Do you think you even need to ...
           <button
             className="btn btn-primary d-inline-block mx-auto"
             onClick={handleStartQuiz}
           >
             Take A New Quiz
           </button>
-          ? I mean, you're pretty much a Python expert now...
+          I mean, you're pretty much a Python expert now...
         </div>
       );
     }
