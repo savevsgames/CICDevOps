@@ -35,10 +35,16 @@ jobs:
           npx wait-on http://localhost:3001
 
       # Run Cypress tests and generate JSON report file for each node version in test matrix
+      # Added --config for base url to be localhost:3001 for local component testing
       - name: Run Cypress Tests
         run: |
           mkdir -p test_logs
-          npx cypress run --reporter json --reporter-options "output=test_logs/node_${{ matrix.node-version }}_test_results.json"
+          npx cypress run --reporter json --reporter-options "output=test_logs/node_${{ matrix.node-version }}_test_results.json" --config baseUrl=http://localhost:3001
+        continue-on-error: false # Stop the workflow if the tests fail
+
+      # Print the test results to the console - for debugging
+      - name: Print test results
+        run: cat test_logs/node_${{ matrix.node-version }}_test_results.json
 
       # Parse Cypress results and dynamically generate summary using jq to parse results and echo to append to the GITHUB_STEP_SUMMARY
       # cat allows us to read the file then pass it to the jq parser
