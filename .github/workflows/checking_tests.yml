@@ -38,14 +38,16 @@ jobs:
       # Added --config for base url to be localhost:3001 for local component testing
       # Run Cypress tests and generate JSON report
       # Run Cypress tests using cypress-io/github-action
-      - name: Run Cypress Component Tests
+      - name: Run Cypress Tests
         uses: cypress-io/github-action@v5
         with:
           browser: electron
-          config-file: cypress.config.ts
+          headless: true # Ensures headless execution
+          config: baseUrl=http://localhost:3001
           spec: cypress/component/**/*.cy.{js,jsx,ts,tsx}
-          record: false
-          publish-summary: true
+        env:
+          CYPRESS_USE_CHROMIUM: 1 # Forces Chromium instead of Electron
+          CYPRESS_REPORTER: json
 
       # Print the Cypress JSON results file
       - name: Print Cypress JSON
