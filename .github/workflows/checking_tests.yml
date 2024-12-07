@@ -8,7 +8,7 @@ on:
 jobs:
   test:
     name: Checking Tests
-    runs-on: ubuntu-lastest
+    runs-on: ubuntu-24.04
     # Define a Strategy matrix to run the same job-steps multiple times in parallel with different configurations
     strategy:
       matrix:
