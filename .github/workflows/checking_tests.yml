@@ -42,16 +42,14 @@ jobs:
       # Added --config for base url to be localhost:3001 for local component testing
       # Run Cypress tests and generate JSON report
       # Run Cypress tests using cypress-io/github-action
-      - name: Run Cypress Tests
+      - name: Run Cypress Component Tests
         uses: cypress-io/github-action@v5
         with:
           browser: electron
-          config: baseUrl=http://localhost:3001,defaultCommandTimeout=60000,pageLoadTimeout=60000
-          spec: "cypress/component/**/*.cy.{js,jsx,ts,tsx}" # Specify component test files
-        env:
-          CYPRESS_REPORTER: json
-          CYPRESS_REPORTER_OPTIONS: output=cypress/reports/results.json
-          CYPRESS_RETRIES: 2
+          config-file: cypress.config.ts
+          spec: cypress/component/**/*.cy.{js,jsx,ts,tsx}
+          record: false
+          publish-summary: true
 
       # Print the Cypress JSON results file
       - name: Print Cypress JSON
