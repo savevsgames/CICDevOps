@@ -39,7 +39,7 @@ jobs:
       - name: Run Cypress Tests
         run: |
           mkdir -p cypress/reports
-          npx cypress run \
+          npx cypress run --component \
           --reporter mochawesome \
           --reporter-options reportDir=cypress/reports,overwrite=true,html=false,json=true \
           --config baseUrl=http://localhost:3001
