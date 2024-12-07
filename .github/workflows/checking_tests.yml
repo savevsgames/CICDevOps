@@ -40,13 +40,13 @@ jobs:
           mkdir -p test_logs
           npx cypress run --reporter json --reporter-options "output=test_logs/node_${{ matrix.node-version }}_test_results.json"
 
-      # Parse Cypress results and dynamically generate summary using jq to parse results and echo to append to the GITHUB_STEP_SUMMARY 
+      # Parse Cypress results and dynamically generate summary using jq to parse results and echo to append to the GITHUB_STEP_SUMMARY
       # cat allows us to read the file then pass it to the jq parser
       # jq is a lightweight JSON parser that takes the -r flag to output raw json instead of formatting it
       # .stats will navigate to the stats object in the JSON file and after the pipe we can select the fields we want to display
       - name: Generate Test Summary
         run: |
-          TEST_RESULTS=$(cat test_logs/develop_branch_pull_test_results.json | jq -r '.stats | {passed: .tests, failed: .failures, pending: .pending, skipped: .skipped, duration: .duration / 1000}')
+          TEST_RESULTS=$(cat test_logs/node_${{ matrix.node-version }}_test_results.json | jq -r '.stats | {passed: .tests, failed: .failures, pending: .pending, skipped: .skipped, duration: .duration / 1000}')
           PASSED=$(echo $TEST_RESULTS | jq -r '.passed')
           FAILED=$(echo $TEST_RESULTS | jq -r '.failed')
           PENDING=$(echo $TEST_RESULTS | jq -r '.pending')
