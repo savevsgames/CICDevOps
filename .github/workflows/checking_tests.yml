@@ -64,5 +64,9 @@ jobs:
           echo '' >> $GITHUB_STEP_SUMMARY
           echo '**Job summary generated at run-time.**' >> $GITHUB_STEP_SUMMARY
 
+      # Stop the server after the tests are done and kill processes that remained open in testing
       - name: Stop server
-        run: kill $(lsof -t -i:3001) || true
+        run: |
+          kill $(lsof -t -i:3001) || true
+          pkill -f xdg-open || true
+          pkill -f firefox || true
