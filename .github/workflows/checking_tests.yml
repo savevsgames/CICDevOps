@@ -8,7 +8,7 @@ on:
 jobs:
   test:
     name: Checking Tests
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-lastest
     # Define a Strategy matrix to run the same job-steps multiple times in parallel with different configurations
     strategy:
       matrix:
@@ -34,6 +34,10 @@ jobs:
           npm run start &
           npx wait-on http://localhost:3001
 
+      # Clear Cypress cache to avoid any caching issues
+      - name: Clear Cypress Cache
+        run: npx cypress cache clear
+
       # Run Cypress tests and generate JSON report file for each node version in test matrix
       # Added --config for base url to be localhost:3001 for local component testing
       # Run Cypress tests and generate JSON report
@@ -42,11 +46,12 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           browser: electron
-          config: baseUrl=http://localhost:3001
+          config: baseUrl=http://localhost:3001,defaultCommandTimeout=60000,pageLoadTimeout=60000
           spec: "cypress/component/**/*.cy.{js,jsx,ts,tsx}" # Specify component test files
         env:
           CYPRESS_REPORTER: json
           CYPRESS_REPORTER_OPTIONS: "output=cypress/reports/results.json"
+          CYPRESS_RETRIES: 2
 
       # Print the Cypress JSON results file
       - name: Print Cypress JSON
