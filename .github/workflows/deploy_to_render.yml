@@ -9,7 +9,10 @@ on:
 jobs:
   ci:
     name: Deploy to Render
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,6 +23,12 @@ jobs:
             echo "Pull requests to main must come from the develop branch. Exiting."
             exit 1
           fi
+
+      # Set up parallel jobs for each node version in the matrix
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
 
       - name: Build and Install for Render
         run: npm run render-build
@@ -40,4 +49,30 @@ jobs:
       - name: Run e2e Cypress Tests on Render
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
-        run: npx cypress run --browser electron
+        run: |
+          mkdir -p cypress/reports  
+          npx cypress run --browser electron
+          --reporter mochawesome \
+          --reporter-options reportDir=cypress/reports,overwrite=true,html=false,json=true \
+
+      # Test summary output json file
+      - name: Print Mochawesome JSON
+        run: cat cypress/reports/mochawesome.json
+
+      # Generate test summary
+      - name: Generate Test Summary
+        run: |
+          TEST_RESULTS=$(cat cypress/reports/mochawesome.json | jq -r '.stats')
+          PASSED=$(echo $TEST_RESULTS | jq -r '.passes')
+          FAILED=$(echo $TEST_RESULTS | jq -r '.failures')
+          PENDING=$(echo $TEST_RESULTS | jq -r '.pending')
+          SKIPPED=$(echo $TEST_RESULTS | jq -r '.skipped // 0') # Default to 0 if skipped is missing
+          DURATION=$(echo $TEST_RESULTS | jq -r '.duration / 1000')
+
+          echo '## Cypress Results for Node.js ${{ matrix.node-version }}' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '| Result     | Passed ✅ | Failed ❌ | Pending 🙋 | Skipped 🔀 | Duration ⏱ |' >> $GITHUB_STEP_SUMMARY
+          echo '|------------|-----------|-----------|------------|------------|-------------|' >> $GITHUB_STEP_SUMMARY
+          echo "| **Tests**  | $PASSED    | $FAILED    | $PENDING     | $SKIPPED     | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '**Job summary generated at run-time.**' >> $GITHUB_STEP_SUMMARY

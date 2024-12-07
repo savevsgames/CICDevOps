@@ -62,7 +62,7 @@ jobs:
           echo '|------------|-----------|-----------|------------|------------|-------------|' >> $GITHUB_STEP_SUMMARY
           echo "| **Tests**  | $PASSED    | $FAILED    | $PENDING     | $SKIPPED     | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
-          echo '**Job summary generated at run-time.**'
+          echo '**Job summary generated at run-time.**' >> $GITHUB_STEP_SUMMARY
 
       - name: Stop server
         run: kill $(lsof -t -i:3001) || true
