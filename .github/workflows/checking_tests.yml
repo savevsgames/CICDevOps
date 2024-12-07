@@ -30,8 +30,36 @@ jobs:
           npm run start &
           npx wait-on http://localhost:3001
 
-      - name: Run cypress tests
-        run: npm run test-component
+      # Run Cypress tests and generate JSON report
+      - name: Run Cypress Tests
+        run: |
+          mkdir -p test_logs
+          npx cypress run --reporter json --reporter-options "output=test_logs/develop_branch_pull_test_results.json"
+
+      # Parse Cypress results and dynamically generate summary
+      - name: Generate Test Summary
+        run: |
+          TEST_RESULTS=$(cat test_logs/develop_branch_pull_test_results.json | jq -r '.stats | {passed: .tests, failed: .failures, pending: .pending, skipped: .skipped, duration: .duration / 1000}')
+          PASSED=$(echo $TEST_RESULTS | jq -r '.passed')
+          FAILED=$(echo $TEST_RESULTS | jq -r '.failed')
+          PENDING=$(echo $TEST_RESULTS | jq -r '.pending')
+          SKIPPED=$(echo $TEST_RESULTS | jq -r '.skipped')
+          DURATION=$(echo $TEST_RESULTS | jq -r '.duration')
+
+          echo '## Cypress Results' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '| Result     | Passed ✅ | Failed ❌ | Pending 🙋 | Skipped 🔀 | Duration ⏱ |' >> $GITHUB_STEP_SUMMARY
+          echo '|------------|-----------|-----------|------------|------------|-------------|' >> $GITHUB_STEP_SUMMARY
+          echo "| **Tests**  | $PASSED    | $FAILED    | $PENDING     | $SKIPPED     | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '**Job summary generated at run-time.**' >> $GITHUB_STEP_SUMMARY
+
+      # Upload results.json as an artifact
+      - name: Upload Cypress Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: cypress-results
+          path: test_logs/develop_branch_pull_test_results.json
 
       - name: Stop server
         run: kill $(lsof -t -i:3001) || true
