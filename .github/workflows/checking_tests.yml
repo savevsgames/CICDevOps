@@ -39,7 +39,7 @@ jobs:
       - name: Run Cypress Tests
         run: |
           mkdir -p test_logs
-          npx cypress run --reporter json --config baseUrl=http://localhost:3001
+          npx cypress run --reporter json --config baseUrl=http://localhost:3001 > cypress-output.json
         continue-on-error: false # Stop the workflow if the tests fail
 
       # Parse Cypress results and dynamically generate summary using jq to parse results and echo to append to the GITHUB_STEP_SUMMARY
@@ -48,7 +48,7 @@ jobs:
       # .stats will navigate to the stats object in the JSON file and after the pipe we can select the fields we want to display
       - name: Generate Test Summary
         run: |
-          TEST_RESULTS=$(cat test_logs/node_${{ matrix.node-version }}_test_results.json | jq -r '.stats | {passed: .tests, failed: .failures, pending: .pending, skipped: .skipped, duration: .duration / 1000}')
+          TEST_RESULTS=$(cat cypress-output.json | jq -r '.stats | {passed: .tests, failed: .failures, pending: .pending, skipped: .skipped, duration: .duration / 1000}')
           PASSED=$(echo $TEST_RESULTS | jq -r '.passed')
           FAILED=$(echo $TEST_RESULTS | jq -r '.failed')
           PENDING=$(echo $TEST_RESULTS | jq -r '.pending')
