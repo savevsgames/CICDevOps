@@ -50,7 +50,7 @@ jobs:
           spec: "cypress/component/**/*.cy.{js,jsx,ts,tsx}" # Specify component test files
         env:
           CYPRESS_REPORTER: json
-          CYPRESS_REPORTER_OPTIONS: "output=cypress/reports/results.json"
+          CYPRESS_REPORTER_OPTIONS: output=cypress/reports/results.json
           CYPRESS_RETRIES: 2
 
       # Print the Cypress JSON results file
