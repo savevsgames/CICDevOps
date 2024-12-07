@@ -78,13 +78,3 @@ jobs:
         with:
           name: test-results
           path: cypress/reports/mochawesome.json
-
-  # Aggregate the results of all matrix jobs to tell if all tests passed
-  aggregate-status:
-    name: Aggregate Matrix Results
-    needs: test
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Check Job Results
-        run: |
-          echo "All matrix jobs completed successfully."
