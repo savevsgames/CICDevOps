@@ -70,3 +70,7 @@ jobs:
           kill $(lsof -t -i:3001) || true
           pkill -f xdg-open || true
           pkill -f firefox || true
+
+      # Final Cleanup step to exit with 0 status code
+      - name: Final Cleanup
+        run: exit 0

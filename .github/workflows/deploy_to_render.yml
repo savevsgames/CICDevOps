@@ -76,3 +76,7 @@ jobs:
           echo "| **Tests**  | $PASSED    | $FAILED    | $PENDING     | $SKIPPED     | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
           echo '**Job summary generated at run-time.**' >> $GITHUB_STEP_SUMMARY
+
+      # Final Cleanup step to exit with 0 status code
+      - name: Final Cleanup
+        run: exit 0
