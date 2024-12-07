@@ -10,12 +10,23 @@ export default defineConfig({
       bundler: "vite",
       viteConfig,
     },
+    reporter: "json", // JSON reporter
+    reporterOptions: {
+      output: "cypress/reports/component-results.json", // Path for saving test results
+    },
+    setupNodeEvents(on, config) {
+      // Add component test-specific event listeners here
+    },
   },
 
   e2e: {
-    baseUrl: process.env.CYPRESS_BASE_URL || "http://localhost:3001", // Fallback for local testing
+    baseUrl: process.env.CYPRESS_BASE_URL || "http://localhost:3001", // Default to local server
+    reporter: "json", // JSON reporter for e2e
+    reporterOptions: {
+      output: "cypress/reports/e2e-results.json", // Path for saving test results
+    },
     setupNodeEvents(on, config) {
-      // implement node event listeners here
+      // Add e2e test-specific event listeners here
     },
   },
 });
