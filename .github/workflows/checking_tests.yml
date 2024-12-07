@@ -38,26 +38,23 @@ jobs:
       # Added --config for base url to be localhost:3001 for local component testing
       - name: Run Cypress Tests
         run: |
-          mkdir -p test_logs
-          npx cypress run --reporter json --config baseUrl=http://localhost:3001 > cypress-output.json
-        continue-on-error: false # Stop the workflow if the tests fail
+          mkdir -p cypress/reports
+          npx cypress run \
+          --reporter mochawesome \
+          --reporter-options reportDir=cypress/reports,overwrite=true,html=false,json=true \
+          --config baseUrl=http://localhost:3001
 
-      # Print the contents of the cypress-output.json file to the console
-      - name: Print Cypress Output
-        run: cat cypress-output.json
+      - name: Print Mochawesome JSON
+        run: cat cypress/reports/mochawesome.json
 
-      # Parse Cypress results and dynamically generate summary using jq to parse results and echo to append to the GITHUB_STEP_SUMMARY
-      # cat allows us to read the file then pass it to the jq parser
-      # jq is a lightweight JSON parser that takes the -r flag to output raw json instead of formatting it
-      # .stats will navigate to the stats object in the JSON file and after the pipe we can select the fields we want to display
       - name: Generate Test Summary
         run: |
-          TEST_RESULTS=$(cat cypress-output.json | jq -r '.stats | {passed: .tests, failed: .failures, pending: .pending, skipped: .skipped, duration: .duration / 1000}')
-          PASSED=$(echo $TEST_RESULTS | jq -r '.passed')
-          FAILED=$(echo $TEST_RESULTS | jq -r '.failed')
+          TEST_RESULTS=$(cat cypress/reports/mochawesome.json | jq -r '.stats')
+          PASSED=$(echo $TEST_RESULTS | jq -r '.passes')
+          FAILED=$(echo $TEST_RESULTS | jq -r '.failures')
           PENDING=$(echo $TEST_RESULTS | jq -r '.pending')
-          SKIPPED=$(echo $TEST_RESULTS | jq -r '.skipped')
-          DURATION=$(echo $TEST_RESULTS | jq -r '.duration')
+          SKIPPED=$(echo $TEST_RESULTS | jq -r '.skipped // 0') # Default to 0 if skipped is missing
+          DURATION=$(echo $TEST_RESULTS | jq -r '.duration / 1000')
 
           echo '## Cypress Results for Node.js ${{ matrix.node-version }}' >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
