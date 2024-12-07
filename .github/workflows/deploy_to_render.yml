@@ -83,3 +83,12 @@ jobs:
         with:
           name: test-results
           path: cypress/reports/mochawesome.json
+
+      # Set the workflow status based on the job status
+      - name: Set Workflow Status
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            exit 0
+          else
+            exit 1
+          fi

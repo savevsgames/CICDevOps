@@ -37,16 +37,26 @@ jobs:
       # Run Cypress tests and generate JSON report file for each node version in test matrix
       # Added --config for base url to be localhost:3001 for local component testing
       - name: Run Cypress Tests
-        run: |
-          mkdir -p cypress/reports
-          npx cypress run --component \
-          --reporter mochawesome \
-          --reporter-options reportDir=cypress/reports,overwrite=true,html=false,json=true \
-          --config baseUrl=http://localhost:3001
+        id: cypress-tests
+        uses: cypress-io/github-action@v3
+        with:
+          browser: chrome
+          headless: true
+          config-file: cypress.config.js
+          config: |
+            {
+              "baseUrl": "http://localhost:3001"
+            }
+          reporter: mochawesome
+          reporterOptions: |
+            {
+              "reportDir": "cypress/reports",
+              "overwrite": true,
+              "html": false,
+              "json": true
+            }
 
-      - name: Print Mochawesome JSON
-        run: cat cypress/reports/mochawesome.json
-
+      # Generate test summary and report it as a GitHub check
       - name: Generate Test Summary
         run: |
           TEST_RESULTS=$(cat cypress/reports/mochawesome.json | jq -r '.stats')
@@ -77,3 +87,12 @@ jobs:
         with:
           name: test-results
           path: cypress/reports/mochawesome.json
+
+      # Set the workflow status based on the job status
+      - name: Set Workflow Status
+      run: |
+        if [[ "${{ job.status }}" == "success" ]]; then
+          exit 0
+        else
+          exit 1
+        fi
