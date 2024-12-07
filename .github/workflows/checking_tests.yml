@@ -37,15 +37,20 @@ jobs:
       # Run Cypress tests and generate JSON report file for each node version in test matrix
       # Added --config for base url to be localhost:3001 for local component testing
       # Run Cypress tests and generate JSON report
+      # Run Cypress tests using cypress-io/github-action
       - name: Run Cypress Tests
         uses: cypress-io/github-action@v5
         with:
           browser: electron
-          testingType: component
-          config-file: cypress.json # Or specify your Cypress config file
           config: baseUrl=http://localhost:3001
-          reporter: json
-          reporter-options: output=cypress/reports/results.json
+          spec: "cypress/component/**/*.cy.{js,jsx,ts,tsx}" # Specify component test files
+        env:
+          CYPRESS_REPORTER: json
+          CYPRESS_REPORTER_OPTIONS: "output=cypress/reports/results.json"
+
+      # Print the Cypress JSON results file
+      - name: Print Cypress JSON
+        run: cat cypress/reports/results.json
 
       # Generate test summary and report it as a GitHub check
       - name: Generate Test Summary
