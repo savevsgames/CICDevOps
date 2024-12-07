@@ -34,23 +34,21 @@ jobs:
           npm run start &
           npx wait-on http://localhost:3001
 
-      # Run Cypress tests and generate JSON report file for each node version in test matrix
-      # Added --config for base url to be localhost:3001 for local component testing
+      # Run Cypress tests and generate JSON report
       - name: Run Cypress Tests
-        run: |
-          mkdir -p cypress/reports
-          npx cypress run --component \
-          --reporter mochawesome \
-          --reporter-options reportDir=cypress/reports,overwrite=true,html=false,json=true \
-          --config baseUrl=http://localhost:3001
+        uses: cypress-io/github-action@v5
+        with:
+          browser: electron
+          testingType: component
+          config-file: cypress.json # Or specify your Cypress config file
+          config: baseUrl=http://localhost:3001
+          reporter: json
+          reporter-options: output=cypress/reports/results.json
 
-      - name: Print Mochawesome JSON
-        run: cat cypress/reports/mochawesome.json
-
-      # Generate test summary and report it as a GitHub check
+      # Parse JSON results and generate GitHub summary
       - name: Generate Test Summary
         run: |
-          TEST_RESULTS=$(cat cypress/reports/mochawesome.json | jq -r '.stats')
+          TEST_RESULTS=$(cat cypress/reports/results.json | jq -r '.stats')
           PASSED=$(echo $TEST_RESULTS | jq -r '.passes')
           FAILED=$(echo $TEST_RESULTS | jq -r '.failures')
           PENDING=$(echo $TEST_RESULTS | jq -r '.pending')
@@ -65,7 +63,7 @@ jobs:
           echo '' >> $GITHUB_STEP_SUMMARY
           echo '**Job summary generated at run-time.**' >> $GITHUB_STEP_SUMMARY
 
-      # Stop the server after the tests are done and kill processes that remained open in testing
+      # Stop the server after the tests are done
       - name: Stop server
         run: |
           kill $(lsof -t -i:3001) || true
@@ -77,4 +75,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: cypress/reports/mochawesome.json
+          path: cypress/reports/results.json
