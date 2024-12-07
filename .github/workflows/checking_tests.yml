@@ -39,12 +39,8 @@ jobs:
       - name: Run Cypress Tests
         run: |
           mkdir -p test_logs
-          npx cypress run --reporter json --reporter-options "output=test_logs/node_${{ matrix.node-version }}_test_results.json" --config baseUrl=http://localhost:3001
+          npx cypress run --reporter json --config baseUrl=http://localhost:3001
         continue-on-error: false # Stop the workflow if the tests fail
-
-      # Print the test results to the console - for debugging
-      - name: Print test results
-        run: cat test_logs/node_${{ matrix.node-version }}_test_results.json
 
       # Parse Cypress results and dynamically generate summary using jq to parse results and echo to append to the GITHUB_STEP_SUMMARY
       # cat allows us to read the file then pass it to the jq parser
@@ -66,13 +62,6 @@ jobs:
           echo "| **Tests**  | $PASSED    | $FAILED    | $PENDING     | $SKIPPED     | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
           echo '**Job summary generated at run-time.**' >> $GITHUB_STEP_SUMMARY
-
-      # Upload results.json as an artifact
-      - name: Upload Cypress Results
-        uses: actions/upload-artifact@v3
-        with:
-          name: cypress-results
-          path: test_logs/node_${{ matrix.node-version }}_test_results.json
 
       - name: Stop server
         run: kill $(lsof -t -i:3001) || true
