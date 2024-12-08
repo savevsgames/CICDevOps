@@ -33,7 +33,7 @@ jobs:
       - name: Start server
         run: |
           npm run start &
-          npx wait-on http://localhost:5173
+          npx wait-on http://localhost:3001
 
       # Step 5: Run Cypress component tests
       - name: Run Cypress Component Tests for Node.js ${{ matrix.node-version }}
@@ -75,7 +75,7 @@ jobs:
 
       # Step 8: Stop the Vite server
       - name: Stop server
-        run: kill $(lsof -t -i:5173) || true
+        run: kill $(lsof -t -i:3001) || true
 
   # Final job to aggregate results and report
   final-status:
