@@ -7,34 +7,45 @@ on:
     branches: [main]
 
 jobs:
+  # Node.js 18.x Deployment and Testing
   deploy-node-18:
     name: Deploy Node.js 18.x
     runs-on: ubuntu-24.04
 
     steps:
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Step 2: Set up Node.js 18.x
       - name: Set up Node.js 18.x
         uses: actions/setup-node@v4
         with:
           node-version: 18.x
 
+      # Step 3: Build the project for deployment
       - name: Render Build for Node.js 18.x
         run: npm run render-build
 
+      # Step 4: Deploy to Render
       - name: Deploy to Render for Node.js 18.x
         env:
           deploy_url: ${{ secrets.RENDER_URL }}
         run: curl "$deploy_url"
 
+      # Step 5: Wait for Render to process the deployment
+      - name: Initial Sleep to Allow Render Update
+        run: sleep 30
+
+      # Step 6: Wait for Render Deployment to be accessible
       - name: Wait for Deployment for Node.js 18.x
         run: npx wait-on https://cicdevops.onrender.com
 
-      # Wait for 2 minutes to ensure the deployment is ready
+      # Step 7: Additional wait to ensure deployment is fully ready
       - name: Wait 2 Minutes
         run: sleep 120
 
+      # Step 8: Run Cypress tests
       - name: Run Cypress Tests for Node.js 18.x
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
@@ -44,18 +55,21 @@ jobs:
           --reporter mochawesome \
           --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-18.x,overwrite=true,html=false,json=true"
 
+      # Step 9: Upload test results for Node.js 18.x
       - name: Upload Test Results for Node.js 18.x
         uses: actions/upload-artifact@v4
         with:
           name: results-e2e-18.x
           path: cypress/reports/results-e2e-18.x.json
 
+  # Node.js 20.x Deployment and Testing
   deploy-node-20:
     name: Deploy Node.js 20.x
     runs-on: ubuntu-24.04
     needs: deploy-node-18
 
     steps:
+      # Steps follow the same pattern as for Node.js 18.x
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -72,10 +86,12 @@ jobs:
           deploy_url: ${{ secrets.RENDER_URL }}
         run: curl "$deploy_url"
 
+      - name: Initial Sleep to Allow Render Update
+        run: sleep 30
+
       - name: Wait for Deployment for Node.js 20.x
         run: npx wait-on https://cicdevops.onrender.com
 
-      # Wait for 2 minutes to ensure the deployment is ready
       - name: Wait 2 Minutes
         run: sleep 120
 
@@ -94,12 +110,14 @@ jobs:
           name: results-e2e-20.x
           path: cypress/reports/results-e2e-20.x.json
 
+  # Node.js 22.x Deployment and Testing
   deploy-node-22:
     name: Deploy Node.js 22.x
     runs-on: ubuntu-24.04
     needs: deploy-node-20
 
     steps:
+      # Steps follow the same pattern as for Node.js 18.x
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -116,10 +134,12 @@ jobs:
           deploy_url: ${{ secrets.RENDER_URL }}
         run: curl "$deploy_url"
 
+      - name: Initial Sleep to Allow Render Update
+        run: sleep 30
+
       - name: Wait for Deployment for Node.js 22.x
         run: npx wait-on https://cicdevops.onrender.com
 
-      # Wait for 2 minutes to ensure the deployment is ready
       - name: Wait 2 Minutes
         run: sleep 120
 
@@ -138,21 +158,25 @@ jobs:
           name: results-e2e-22.x
           path: cypress/reports/results-e2e-22.x.json
 
+  # Final Status Job
   final-status:
     name: Final Status
     runs-on: ubuntu-24.04
-    needs: [deploy-node-22]
+    needs: deploy-node-22
 
     steps:
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Step 2: Download all test artifacts
       - name: Download All Test Logs
         uses: actions/download-artifact@v4
         with:
           name: results-e2e-*
           path: cypress/reports
 
+      # Step 3: Aggregate results into a single summary
       - name: Aggregate Results
         run: |
           echo "## Aggregate Test Summary" > aggregate-summary.txt
@@ -162,15 +186,18 @@ jobs:
             cat "$file" >> aggregate-summary.txt
           done
 
+      # Step 4: Print the aggregated summary
       - name: Print Aggregate Summary
         run: cat aggregate-summary.txt
 
+      # Step 5: Upload the final aggregated test summary
       - name: Upload Final Test Summary
         uses: actions/upload-artifact@v4
         with:
           name: aggregate-summary
           path: aggregate-summary.txt
 
+      # Step 6: Report final status to GitHub
       - name: Report Final Status to GitHub
         run: |
           curl -X POST \
