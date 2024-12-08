@@ -31,6 +31,10 @@ jobs:
       - name: Wait for Deployment for Node.js 18.x
         run: npx wait-on https://cicdevops.onrender.com
 
+      # Wait for 2 minutes to ensure the deployment is ready
+      - name: Wait 2 Minutes
+        run: sleep 120
+
       - name: Run Cypress Tests for Node.js 18.x
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
@@ -71,6 +75,10 @@ jobs:
       - name: Wait for Deployment for Node.js 20.x
         run: npx wait-on https://cicdevops.onrender.com
 
+      # Wait for 2 minutes to ensure the deployment is ready
+      - name: Wait 2 Minutes
+        run: sleep 120
+
       - name: Run Cypress Tests for Node.js 20.x
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
@@ -110,6 +118,10 @@ jobs:
 
       - name: Wait for Deployment for Node.js 22.x
         run: npx wait-on https://cicdevops.onrender.com
+
+      # Wait for 2 minutes to ensure the deployment is ready
+      - name: Wait 2 Minutes
+        run: sleep 120
 
       - name: Run Cypress Tests for Node.js 22.x
         env:
