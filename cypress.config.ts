@@ -13,6 +13,7 @@ export default defineConfig({
     },
     port: 5173, // Match the port specified in the GitHub workflow
     setupNodeEvents(on, config) {
+      // Hook to log the component spec completion
       on("after:spec", (spec, results) => {
         console.log(`Component Spec finished: ${spec.relative}`);
         if (results && results.stats.failures) {
@@ -21,7 +22,7 @@ export default defineConfig({
           );
         }
       });
-      return config; // Return the updated config
+      return config; // Return the updated config for cypress
     },
   },
   e2e: {
@@ -45,6 +46,7 @@ export default defineConfig({
         const oldFilename = join(reportsDir, "mochawesome.json");
         const newFilename = join(reportsDir, `results-e2e-${nodeVersion}.json`);
         try {
+          // Use renameSync to rename the file synchronously to ensure it's available
           renameSync(oldFilename, newFilename);
           console.log(`Renamed report to: ${newFilename}`);
         } catch (err) {
