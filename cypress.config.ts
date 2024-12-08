@@ -40,7 +40,7 @@ export default defineConfig({
           );
         }
       });
-      return config; // Pass the configuration to Cypress
+      return config;
     },
   },
 });

@@ -7,15 +7,14 @@ on:
     branches: [main]
 
 jobs:
-  deploy:
-    name: Deploy to Render
+  deploy-node-18:
+    name: Deploy Node.js 18.x
     runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Node.js 18.x Tests
       - name: Set up Node.js 18.x
         uses: actions/setup-node@v4
         with:
@@ -30,19 +29,32 @@ jobs:
         run: curl "$deploy_url"
 
       - name: Wait for Deployment for Node.js 18.x
-        run: sleep 120
+        run: npx wait-on https://cicdevops.onrender.com
 
       - name: Run Cypress Tests for Node.js 18.x
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
-          NODE_VERSION: "18.x"
         run: |
           mkdir -p cypress/reports
           npx cypress run --browser chrome \
           --reporter mochawesome \
-          --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-${{ env.NODE_VERSION }},overwrite=true,html=false,json=true"
+          --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-18.x,overwrite=true,html=false,json=true"
 
-      # Node.js 20.x Tests
+      - name: Upload Test Results for Node.js 18.x
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-e2e-18.x
+          path: cypress/reports/results-e2e-18.x.json
+
+  deploy-node-20:
+    name: Deploy Node.js 20.x
+    runs-on: ubuntu-24.04
+    needs: deploy-node-18
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up Node.js 20.x
         uses: actions/setup-node@v4
         with:
@@ -57,19 +69,32 @@ jobs:
         run: curl "$deploy_url"
 
       - name: Wait for Deployment for Node.js 20.x
-        run: sleep 120
+        run: npx wait-on https://cicdevops.onrender.com
 
       - name: Run Cypress Tests for Node.js 20.x
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
-          NODE_VERSION: "20.x"
         run: |
           mkdir -p cypress/reports
           npx cypress run --browser chrome \
           --reporter mochawesome \
-          --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-${{ env.NODE_VERSION }},overwrite=true,html=false,json=true"
+          --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-20.x,overwrite=true,html=false,json=true"
 
-      # Node.js 22.x Tests
+      - name: Upload Test Results for Node.js 20.x
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-e2e-20.x
+          path: cypress/reports/results-e2e-20.x.json
+
+  deploy-node-22:
+    name: Deploy Node.js 22.x
+    runs-on: ubuntu-24.04
+    needs: deploy-node-20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up Node.js 22.x
         uses: actions/setup-node@v4
         with:
@@ -84,32 +109,44 @@ jobs:
         run: curl "$deploy_url"
 
       - name: Wait for Deployment for Node.js 22.x
-        run: sleep 120
+        run: npx wait-on https://cicdevops.onrender.com
 
       - name: Run Cypress Tests for Node.js 22.x
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
-          NODE_VERSION: "22.x"
         run: |
           mkdir -p cypress/reports
           npx cypress run --browser chrome \
           --reporter mochawesome \
-          --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-${{ env.NODE_VERSION }},overwrite=true,html=false,json=true"
+          --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-22.x,overwrite=true,html=false,json=true"
+
+      - name: Upload Test Results for Node.js 22.x
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-e2e-22.x
+          path: cypress/reports/results-e2e-22.x.json
 
   final-status:
     name: Final Status
     runs-on: ubuntu-24.04
-    needs: deploy
+    needs: [deploy-node-22]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Download All Test Logs
+        uses: actions/download-artifact@v4
+        with:
+          name: results-e2e-*
+          path: cypress/reports
 
       - name: Aggregate Results
         run: |
           echo "## Aggregate Test Summary" > aggregate-summary.txt
           echo "" >> aggregate-summary.txt
           for file in cypress/reports/results-e2e-*.json; do
+            echo "File: $file" >> aggregate-summary.txt
             cat "$file" >> aggregate-summary.txt
           done
 
