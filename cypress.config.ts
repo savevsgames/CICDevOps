@@ -21,7 +21,6 @@ export default defineConfig({
     reporter: "mochawesome", // Mochawesome is the default reporter
     reporterOptions: {
       reportDir: "cypress/reports", // Directory to save reports
-      reportFilename: "results-e2e", // Default filename format - needed for JSON reports
       overwrite: true, // Overwrite existing reports
       html: false, // Disable HTML reports
       json: true, // Generate JSON reports
