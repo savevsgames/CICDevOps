@@ -70,3 +70,12 @@ jobs:
       # 9. Stop the Vite server after tests complete
       - name: Stop server
         run: kill $(lsof -t -i:3001) || true
+
+  # 10. End the job - Final Status will be tracked in the PR too
+  final-status:
+    name: Final Status
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Aggregate Status
+        run: echo "All tests passed successfully."
