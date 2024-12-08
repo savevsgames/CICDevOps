@@ -221,7 +221,7 @@ jobs:
 
   # Final Status Job
   final-status:
-    name: Final Status
+    name: Final Status E2E Tests
     runs-on: ubuntu-24.04
     needs: deploy-node-22
 
