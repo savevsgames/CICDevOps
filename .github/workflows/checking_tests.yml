@@ -14,43 +14,39 @@ jobs:
         node-version: [18.x, 20.x, 22.x]
 
     steps:
+      # 1. Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2. Set up the Node.js version based on the matrix
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Install dependencies
-        run: npm install
+      # 3. Install all dependencies & # 4. Build the project
+      - name: Render Build (Install and Build)
+        run: npm run render-build
 
-      - name: Build project
-        run: npm run build
-
+      # 5. Start the server in the background
       - name: Start server
-        run: npm run start &
-
-      - name: Wait for server to be ready
-        run: npx wait-on http://localhost:3001
-
-      - name: Run Cypress Tests
-        uses: cypress-io/github-action@v5
-        with:
-          config-file: cypress.config.ts
-          browser: chrome
-          headless: true
-          spec: "cypress/component/**/*.cy.js"
-          wait-on: http://localhost:3001
-
-      - name: Generate JSON Report
         run: |
-          mkdir -p test_logs
-          npx cypress run --reporter json --reporter-options "output=test_logs/results.json"
+          npm run start &
+          npx wait-on http://localhost:3001
 
+      # 6. Run Cypress component tests
+      - name: Run Cypress Component Tests
+        run: npm run test-component -- --reporter mochawesome --reporter-options "reportDir=test_logs,reportFilename=results,overwrite=false"
+
+      # 7. Parse and Generate Test Summary
       - name: Parse and Generate Test Summary
         run: |
           RESULTS_FILE=test_logs/results.json
+          if [ ! -f "$RESULTS_FILE" ]; then
+            echo "Cypress results JSON file not found. Ensure mochawesome is configured correctly."
+            exit 1
+          fi
+
           TEST_RESULTS=$(cat $RESULTS_FILE | jq -r '.stats | {passed: .tests, failed: .failures, pending: .pending, skipped: .skipped, duration: (.duration / 1000)}')
           PASSED=$(echo $TEST_RESULTS | jq -r '.passed')
           FAILED=$(echo $TEST_RESULTS | jq -r '.failed')
@@ -64,11 +60,13 @@ jobs:
           echo '|------------|-----------|-----------|------------|------------|-------------|' >> $GITHUB_STEP_SUMMARY
           echo "| **Tests**  | $PASSED    | $FAILED    | $PENDING     | $SKIPPED     | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
 
+      # 8. Upload test logs for debugging or review
       - name: Upload Test Logs
         uses: actions/upload-artifact@v3
         with:
           name: cypress-results-node-${{ matrix.node-version }}
           path: test_logs/results.json
 
+      # 9. Stop the Vite server after tests complete
       - name: Stop server
         run: kill $(lsof -t -i:3001) || true
