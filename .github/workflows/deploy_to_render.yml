@@ -34,7 +34,7 @@ jobs:
         run: curl "$deploy_url"
 
       # Step 5: Initial Polling to Render can go here if deployment is slow
-      - name: Initial Polling to Render can go here if deployment is slow
+      - name: Initial Polling to Render can go here if deployment is slow - TBD
         run: sleep 10
 
       # Step 6: Wait for Deployment for Node.js 18.x
