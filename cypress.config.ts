@@ -17,10 +17,12 @@ export default defineConfig({
     },
   },
   e2e: {
-    baseUrl: process.env.BASE_URL || "http://localhost:3001", // Use environment variable for flexibility
-    reporter: "json", // Output results in JSON format for processing in the GitHub workflow
+    baseUrl: process.env.CYPRESS_BASE_URL || "https://cicdevops.onrender.com/",
     reporterOptions: {
-      output: "cypress/reports/e2e-results.json", // Define the output location for e2e test logs
+      reportDir: "cypress/reports", // Directory to save reports
+      overwrite: true, // Overwrite existing reports
+      html: false, // Disable HTML reports
+      json: true, // Generate JSON reports
     },
     setupNodeEvents(on, config) {
       // Add any e2e-specific event listeners here
