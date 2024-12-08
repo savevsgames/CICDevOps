@@ -61,13 +61,13 @@ jobs:
           SKIPPED=$(echo $TEST_RESULTS | jq -r '.skipped')
           DURATION=$(echo $TEST_RESULTS | jq -r '.duration')
 
-          echo '### Cypress Component Test Results for Node.js ${{ matrix.node-version }}' >> test_logs/summary.txt
-          echo '| Node Version | Passed ✅ | Failed ❌ | Pending 🙋 | Skipped 🔀 | Duration ⏱ |' >> test_logs/summary.txt
-          echo '|--------------|-----------|-----------|------------|------------|-------------|' >> test_logs/summary.txt
-          echo "| ${{ matrix.node-version }} | $PASSED | $FAILED | $PENDING | $SKIPPED | ${DURATION}s |" >> test_logs/summary.txt
+          echo '### Cypress Component Test Results for Node.js ${{ matrix.node-version }}' >> test_logs/summary-${{ matrix.node-version }}.txt
+          echo '| Node Version | Passed ✅ | Failed ❌ | Pending 🙋 | Skipped 🔀 | Duration ⏱ |' >> test_logs/summary-${{ matrix.node-version }}.txt
+          echo '|--------------|-----------|-----------|------------|------------|-------------|' >> test_logs/summary-${{ matrix.node-version }}.txt
+          echo "| ${{ matrix.node-version }} | $PASSED | $FAILED | $PENDING | $SKIPPED | ${DURATION}s |" >> test_logs/summary-${{ matrix.node-version }}.txt
 
       # Step 7: Upload logs
-      - name: Upload Test Logs and Summary
+      - name: Upload Test Logs and Summary for Node.js ${{ matrix.node-version }}
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.node-version }}
@@ -85,18 +85,32 @@ jobs:
 
     steps:
       # Step 1: Download all test logs
-      - name: Download Test Logs and Summaries
+      - name: Download Test Logs for Node.js 18.x
         uses: actions/download-artifact@v4
         with:
-          name: test-results-${{ matrix.node-version }}
-          path: test_logs/
+          name: test-results-18.x
+          path: test_logs_18x/
+
+      - name: Download Test Logs for Node.js 20.x
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results-20.x
+          path: test_logs_20x/
+
+      - name: Download Test Logs for Node.js 22.x
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results-22.x
+          path: test_logs_22x/
 
       # Step 2: Aggregate results
       - name: Aggregate Results
         run: |
           echo "## Aggregate Test Summary" > aggregate-summary.txt
           echo "" >> aggregate-summary.txt
-          find test_logs/ -name "summary.txt" -exec cat {} + >> aggregate-summary.txt
+          cat test_logs_18x/summary-18.x.txt >> aggregate-summary.txt
+          cat test_logs_20x/summary-20.x.txt >> aggregate-summary.txt
+          cat test_logs_22x/summary-22.x.txt >> aggregate-summary.txt
 
       # Step 3: Print the summary
       - name: Print Aggregate Summary
