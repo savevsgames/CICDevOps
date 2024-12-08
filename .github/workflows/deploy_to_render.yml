@@ -33,11 +33,11 @@ jobs:
           deploy_url: ${{ secrets.RENDER_URL }}
         run: curl "$deploy_url"
 
-      # Step 5: Wait for Render to process the deployment
+      # Step 5: Initial Sleep to Allow Render Update
       - name: Initial Sleep to Allow Render Update
         run: sleep 30
 
-      # Step 6: Wait for Render Deployment to be accessible
+      # Step 6: Wait for Deployment for Node.js 18.x
       - name: Wait for Deployment for Node.js 18.x
         run: npx wait-on https://cicdevops.onrender.com
 
@@ -45,7 +45,7 @@ jobs:
       - name: Wait 2 Minutes
         run: sleep 120
 
-      # Step 8: Run Cypress tests
+      # Step 8: Run Cypress Tests for Node.js 18.x
       - name: Run Cypress Tests for Node.js 18.x
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
@@ -54,7 +54,12 @@ jobs:
           mkdir -p cypress/reports
           npx cypress run --browser chrome
 
-      # Step 9: Upload test results for Node.js 18.x
+      # Step 9: Rename Test Results
+      - name: Rename Test Results for Node.js 18.x
+        run: |
+          mv cypress/reports/mochawesome.json cypress/reports/results-e2e-18.x.json
+
+      # Step 10: Upload Test Results for Node.js 18.x
       - name: Upload Test Results for Node.js 18.x
         uses: actions/upload-artifact@v4
         with:
@@ -102,6 +107,10 @@ jobs:
           mkdir -p cypress/reports
           npx cypress run --browser chrome
 
+      - name: Rename Test Results for Node.js 20.x
+        run: |
+          mv cypress/reports/mochawesome.json cypress/reports/results-e2e-20.x.json
+
       - name: Upload Test Results for Node.js 20.x
         uses: actions/upload-artifact@v4
         with:
@@ -148,6 +157,10 @@ jobs:
         run: |
           mkdir -p cypress/reports
           npx cypress run --browser chrome
+
+      - name: Rename Test Results for Node.js 22.x
+        run: |
+          mv cypress/reports/mochawesome.json cypress/reports/results-e2e-22.x.json
 
       - name: Upload Test Results for Node.js 22.x
         uses: actions/upload-artifact@v4
