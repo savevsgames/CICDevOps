@@ -1,4 +1,4 @@
-name: Cypress Tests
+name: Test Node.js Versions
 
 on:
   pull_request:
@@ -7,12 +7,11 @@ on:
 
 jobs:
   test:
-    name: Cypress Tests
+    name: Cypress Tests with Node.js Matrix
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
-
+        node-version: [18.x, 20.x, 22.x]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -25,24 +24,51 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Build project
+        run: npm run build
+
+      - name: Start server
+        run: npm run start &
+      
+      - name: Wait for server
+        uses: jakejarvis/wait-on@v2
+        with:
+          resources: http://localhost:3001
+
       - name: Run Cypress Tests
-        run: |
-          npm run start & npx wait-on http://localhost:5173
-          npx cypress run --component --browser chrome > cypress/component-results-${{ matrix.node-version }}.log
+        uses: cypress-io/github-action@v5
+        with:
+          config-file: cypress.config.ts
+          browser: chrome
+          component: true
+          record: false
+          headless: true
+          env: BASE_URL=http://localhost:3001
+          output: test_logs
 
       - name: Generate Test Summary
         run: |
-          PASSED=$(grep -oP "✔ \d+ passing" cypress/component-results-${{ matrix.node-version }}.log | grep -oP "\d+" || echo "0")
-          FAILED=$(grep -oP "✖ \d+ failing" cypress/component-results-${{ matrix.node-version }}.log | grep -oP "\d+" || echo "0")
-          SKIPPED=$(grep -oP "\d+ pending" cypress/component-results-${{ matrix.node-version }}.log | grep -oP "\d+" || echo "0")
-          DURATION=$(grep -oP "Run Finished \d+ms" cypress/component-results-${{ matrix.node-version }}.log || echo "0ms")
+          RESULTS_FILE=test_logs/results.json
+          TEST_RESULTS=$(cat $RESULTS_FILE | jq -r '.stats | {passed: .tests, failed: .failures, pending: .pending, skipped: .skipped, duration: (.duration / 1000)}')
+          PASSED=$(echo $TEST_RESULTS | jq -r '.passed')
+          FAILED=$(echo $TEST_RESULTS | jq -r '.failed')
+          PENDING=$(echo $TEST_RESULTS | jq -r '.pending')
+          SKIPPED=$(echo $TEST_RESULTS | jq -r '.skipped')
+          DURATION=$(echo $TEST_RESULTS | jq -r '.duration')
 
-          echo "| Result  | Passed | Failed | Skipped | Duration |" >> $GITHUB_STEP_SUMMARY
-          echo "|---------|--------|--------|---------|----------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Cypress | $PASSED | $FAILED | $SKIPPED | $DURATION |" >> $GITHUB_STEP_SUMMARY
+          echo '### Cypress Test Results for Node.js ${{ matrix.node-version }}' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '| Result     | Passed ✅ | Failed ❌ | Pending 🙋 | Skipped 🔀 | Duration ⏱ |' >> $GITHUB_STEP_SUMMARY
+          echo '|------------|-----------|-----------|------------|------------|-------------|' >> $GITHUB_STEP_SUMMARY
+          echo "| **Tests**  | $PASSED    | $FAILED    | $PENDING     | $SKIPPED     | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '**Results generated at run-time.**' >> $GITHUB_STEP_SUMMARY
 
-      - name: Upload Test Logs
-        uses: actions/upload-artifact@v4
+      - name: Upload Cypress Results
+        uses: actions/upload-artifact@v3
         with:
-          name: Cypress-Logs-${{ matrix.node-version }}
-          path: cypress/component-results-${{ matrix.node-version }}.log
+          name: cypress-results-node-${{ matrix.node-version }}
+          path: test_logs/results.json
+
+      - name: Stop server
+        run: kill $(lsof -t -i:3001) || true
