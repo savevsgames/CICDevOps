@@ -7,55 +7,100 @@ on:
     branches: [main]
 
 jobs:
-  # Run individual Node.js tests sequentially
   deploy:
     name: Deploy to Render
     runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js ${{ matrix.node-version }}
+      # Node.js 18.x Tests
+      - name: Set up Node.js 18.x
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 18.x
 
-      - name: Render Build (Install and Build)
+      - name: Render Build for Node.js 18.x
         run: npm run render-build
 
-      - name: Deploy to Render
+      - name: Deploy to Render for Node.js 18.x
         env:
           deploy_url: ${{ secrets.RENDER_URL }}
-        run: |
-          curl "$deploy_url"
+        run: curl "$deploy_url"
 
-      - name: Wait for Render Deployment
-        run: sleep 120 # Adjust the time as necessary
+      - name: Wait for Deployment for Node.js 18.x
+        run: sleep 120
 
-      - name: Run e2e Cypress Tests for Node.js ${{ matrix.node-version }}
+      - name: Run Cypress Tests for Node.js 18.x
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
+          NODE_VERSION: "18.x"
         run: |
+          mkdir -p cypress/reports
           npx cypress run --browser chrome \
-          --reporter spec
+          --reporter mochawesome \
+          --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-${{ env.NODE_VERSION }},overwrite=true,html=false,json=true"
 
-      - name: Append Test Summary for Node.js ${{ matrix.node-version }}
+      # Node.js 20.x Tests
+      - name: Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Render Build for Node.js 20.x
+        run: npm run render-build
+
+      - name: Deploy to Render for Node.js 20.x
+        env:
+          deploy_url: ${{ secrets.RENDER_URL }}
+        run: curl "$deploy_url"
+
+      - name: Wait for Deployment for Node.js 20.x
+        run: sleep 120
+
+      - name: Run Cypress Tests for Node.js 20.x
+        env:
+          CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
+          NODE_VERSION: "20.x"
         run: |
-          mkdir -p test-summaries
-          echo "### Results for Node.js ${{ matrix.node-version }}" >> test-summaries/summary.txt
-          echo "| Node Version | Passed ✅ | Failed ❌ | Duration ⏱ |" >> test-summaries/summary.txt
-          echo "|--------------|-----------|-----------|-------------|" >> test-summaries/summary.txt
-          echo "| ${{ matrix.node-version }} | 1 | 0 | 30s |" >> test-summaries/summary.txt # Replace with dynamic values if needed
+          mkdir -p cypress/reports
+          npx cypress run --browser chrome \
+          --reporter mochawesome \
+          --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-${{ env.NODE_VERSION }},overwrite=true,html=false,json=true"
 
-  # Final Status to Aggregate Results
+      # Node.js 22.x Tests
+      - name: Set up Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: Render Build for Node.js 22.x
+        run: npm run render-build
+
+      - name: Deploy to Render for Node.js 22.x
+        env:
+          deploy_url: ${{ secrets.RENDER_URL }}
+        run: curl "$deploy_url"
+
+      - name: Wait for Deployment for Node.js 22.x
+        run: sleep 120
+
+      - name: Run Cypress Tests for Node.js 22.x
+        env:
+          CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
+          NODE_VERSION: "22.x"
+        run: |
+          mkdir -p cypress/reports
+          npx cypress run --browser chrome \
+          --reporter mochawesome \
+          --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-${{ env.NODE_VERSION }},overwrite=true,html=false,json=true"
+
   final-status:
     name: Final Status
     runs-on: ubuntu-24.04
     needs: deploy
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -64,7 +109,9 @@ jobs:
         run: |
           echo "## Aggregate Test Summary" > aggregate-summary.txt
           echo "" >> aggregate-summary.txt
-          cat test-summaries/summary.txt >> aggregate-summary.txt
+          for file in cypress/reports/results-e2e-*.json; do
+            cat "$file" >> aggregate-summary.txt
+          done
 
       - name: Print Aggregate Summary
         run: cat aggregate-summary.txt
