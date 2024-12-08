@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  deploy:
+  ci:
     name: Deploy to Render
     runs-on: ubuntu-24.04
     strategy:
@@ -61,7 +61,7 @@ jobs:
           mkdir -p cypress/reports  
           npm run test \
           --reporter mochawesome \
-           --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-${{ matrix.node-version }},overwrite=true,html=false,json=true"
+          --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-${{ matrix.node-version }},overwrite=true,html=false,json=true"
 
       # Test summary output and JSON report
       - name: Print Mochawesome JSON
@@ -99,7 +99,7 @@ jobs:
   final-status:
     name: Final Status
     runs-on: ubuntu-24.04
-    needs: deploy
+    needs: ci
     steps:
       - name: Report Final Status to GitHub
         run: |
