@@ -75,7 +75,7 @@ jobs:
   # Actions now has permissions to merge pull requests and share token with each separate job to report statuses
   final-status:
     name: Final Status
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: test
     steps:
       # Explicitly update the GitHub Status API
