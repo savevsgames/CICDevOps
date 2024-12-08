@@ -1,4 +1,4 @@
-name: Test Node.js Versions
+name: Checking Tests
 
 on:
   pull_request:
@@ -7,11 +7,12 @@ on:
 
 jobs:
   test:
-    name: Cypress Tests with Node.js Matrix
+    name: Checking Tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,22 +29,26 @@ jobs:
         run: npm run build
 
       - name: Start server
-        run: |
-          npm run start &
-          npx wait-on http://localhost:3001
+        run: npm run start &
+
+      - name: Wait for server to be ready
+        run: npx wait-on http://localhost:3001
 
       - name: Run Cypress Tests
         uses: cypress-io/github-action@v5
         with:
           config-file: cypress.config.ts
           browser: chrome
-          component: true
-          record: false
           headless: true
-          env: BASE_URL=http://localhost:3001
-          output: test_logs
+          spec: "cypress/component/**/*.cy.js"
+          wait-on: http://localhost:3001
 
-      - name: Generate Test Summary
+      - name: Generate JSON Report
+        run: |
+          mkdir -p test_logs
+          npx cypress run --reporter json --reporter-options "output=test_logs/results.json"
+
+      - name: Parse and Generate Test Summary
         run: |
           RESULTS_FILE=test_logs/results.json
           TEST_RESULTS=$(cat $RESULTS_FILE | jq -r '.stats | {passed: .tests, failed: .failures, pending: .pending, skipped: .skipped, duration: (.duration / 1000)}')
@@ -58,10 +63,8 @@ jobs:
           echo '| Result     | Passed ✅ | Failed ❌ | Pending 🙋 | Skipped 🔀 | Duration ⏱ |' >> $GITHUB_STEP_SUMMARY
           echo '|------------|-----------|-----------|------------|------------|-------------|' >> $GITHUB_STEP_SUMMARY
           echo "| **Tests**  | $PASSED    | $FAILED    | $PENDING     | $SKIPPED     | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
-          echo '**Results generated at run-time.**' >> $GITHUB_STEP_SUMMARY
 
-      - name: Upload Cypress Results
+      - name: Upload Test Logs
         uses: actions/upload-artifact@v3
         with:
           name: cypress-results-node-${{ matrix.node-version }}
