@@ -29,11 +29,11 @@ jobs:
 
       - name: Start server
         run: npm run start &
-      
-      - name: Wait for server
-        uses: jakejarvis/wait-on@v2
-        with:
-          resources: http://localhost:3001
+
+      - name: Start server
+        run: |
+          npm run start &
+          npx wait-on http://localhost:5173
 
       - name: Run Cypress Tests
         uses: cypress-io/github-action@v5
