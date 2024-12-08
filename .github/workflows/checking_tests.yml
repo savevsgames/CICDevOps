@@ -28,12 +28,9 @@ jobs:
         run: npm run build
 
       - name: Start server
-        run: npm run start &
-
-      - name: Start server
         run: |
           npm run start &
-          npx wait-on http://localhost:5173
+          npx wait-on http://localhost:3001
 
       - name: Run Cypress Tests
         uses: cypress-io/github-action@v5
