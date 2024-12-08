@@ -59,9 +59,9 @@ jobs:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
         run: |
           mkdir -p cypress/reports  
-          npx cypress run --browser electron \
+          npm run test \
           --reporter mochawesome \
-          --reporter-options reportDir=cypress/reports,overwrite=true,html=false,json=true
+          --reporter-options reportDir=cypress/reports/results-e2e-${{ matrix.node-version }}.json,overwrite=true,html=false,json=true
 
       # Test summary output and JSON report
       - name: Print Mochawesome JSON
