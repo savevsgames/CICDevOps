@@ -36,7 +36,7 @@ jobs:
 
       # 6. Run Cypress component tests
       - name: Run Cypress Component Tests
-        run: npm run test-component -- --reporter mochawesome --reporter-options "reportDir=test_logs,reportFilename=results,overwrite=false"
+        run: npm run test-component --reporter mochawesome --reporter-options "reportDir=test_logs,reportFilename=results,overwrite=false"
 
       # 7. Parse and Generate Test Summary
       - name: Parse and Generate Test Summary

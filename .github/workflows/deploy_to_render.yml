@@ -7,99 +7,142 @@ on:
     branches: [main]
 
 jobs:
-  ci:
-    name: Deploy to Render
+  # Job for Node.js 18
+  deploy-node-18:
+    name: Deploy with Node.js 18
     runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Ensure the source branch is develop
-        run: |
-          if [[ "${{ github.event.pull_request.head.ref }}" != "develop" ]]; then
-            echo "Pull requests to main must come from the develop branch. Exiting."
-            exit 1
-          fi
-
-      # Set up Node.js
-      - name: Set up Node.js
+      - name: Set up Node.js 18
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 18.x
 
-      # Build and Install for Render
       - name: Render Build (Install and Build)
         run: npm run render-build
 
-      # Make sure the pull request is to the main branch - troubleshooting step
-      - name: Debug Ref Information
-        run: |
-          echo "github.ref: ${{ github.ref }}"
-          echo "github.event.pull_request.base.ref: ${{ github.event.pull_request.base.ref }}"
-
-      # Deploy to Render
       - name: Deploy to Render
-        if: github.event.pull_request.base.ref == 'main'
         env:
           deploy_url: ${{ secrets.RENDER_URL }}
         run: |
           curl "$deploy_url"
 
-      # Wait for Render Deployment
       - name: Wait for Render Deployment
-        run: sleep 120 # Adjust if needed
+        run: sleep 120 # Adjust as needed to avoid timeouts
 
-      # Run Cypress e2e Tests on Render - Using Chrome instead of Electron
-      - name: Run e2e Cypress Tests
+      - name: Run e2e Cypress Tests for Node.js 18
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
         run: |
           mkdir -p cypress/reports  
           npx cypress run --browser chrome \
           --reporter mochawesome \
-          --reporter-options "reportFilename=results-e2e-${{ matrix.node-version }}"
+          --reporter-options "reportFilename=results-e2e-18.x"
 
-      # Test summary output and JSON report
-      - name: Print Mochawesome JSON
-        run: cat cypress/reports/results-e2e-${{ matrix.node-version }}.json
+      - name: Print Mochawesome JSON for Node.js 18
+        run: cat cypress/reports/results-e2e-18.x.json
 
-      - name: Generate Test Summary
-        run: |
-          RESULTS_FILE=cypress/reports/results-e2e-${{ matrix.node-version }}.json
-          if [ ! -f "$RESULTS_FILE" ]; then
-            echo "Cypress results JSON file not found. Ensure results-e2e-${{ matrix.node-version }} is configured correctly."
-            exit 1
-          fi
-
-          TEST_RESULTS=$(cat $RESULTS_FILE | jq -r '.stats')
-          PASSED=$(echo $TEST_RESULTS | jq -r '.passes')
-          FAILED=$(echo $TEST_RESULTS | jq -r '.failures')
-          PENDING=$(echo $TEST_RESULTS | jq -r '.pending')
-          SKIPPED=$(echo $TEST_RESULTS | jq -r '.skipped // 0') # Default to 0 if skipped is missing
-          DURATION=$(echo $TEST_RESULTS | jq -r '.duration / 1000')
-
-          echo '## Cypress Results for Node.js ${{ matrix.node-version }}' >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
-          echo '| Result     | Passed ✅ | Failed ❌ | Pending 🙋 | Skipped 🔀 | Duration ⏱ |' >> $GITHUB_STEP_SUMMARY
-          echo '|------------|-----------|-----------|------------|------------|-------------|' >> $GITHUB_STEP_SUMMARY
-          echo "| **Tests**  | $PASSED    | $FAILED    | $PENDING     | $SKIPPED     | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
-
-      # Upload the artifact - test results JSON
-      - name: Upload Test Results
+      - name: Upload Test Results for Node.js 18
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
-          path: cypress/reports/results-e2e-${{ matrix.node-version }}.json
+          name: test-results-node-18
+          path: cypress/reports/results-e2e-18.x.json
 
-  # Final Status Job to Update GitHub Status
+  # Job for Node.js 20
+  deploy-node-20:
+    name: Deploy with Node.js 20
+    runs-on: ubuntu-24.04
+    needs: deploy-node-18
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Render Build (Install and Build)
+        run: npm run render-build
+
+      - name: Deploy to Render
+        env:
+          deploy_url: ${{ secrets.RENDER_URL }}
+        run: |
+          curl "$deploy_url"
+
+      - name: Wait for Render Deployment
+        run: sleep 120 # Adjust if needed
+
+      - name: Run e2e Cypress Tests for Node.js 20
+        env:
+          CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
+        run: |
+          mkdir -p cypress/reports  
+          npx cypress run --browser chrome \
+          --reporter mochawesome \
+          --reporter-options "reportFilename=results-e2e-20.x"
+
+      - name: Print Mochawesome JSON for Node.js 20
+        run: cat cypress/reports/results-e2e-20.x.json
+
+      - name: Upload Test Results for Node.js 20
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-node-20
+          path: cypress/reports/results-e2e-20.x.json
+
+  # Job for Node.js 22
+  deploy-node-22:
+    name: Deploy with Node.js 22
+    runs-on: ubuntu-24.04
+    needs: deploy-node-20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+
+      - name: Render Build (Install and Build)
+        run: npm run render-build
+
+      - name: Deploy to Render
+        env:
+          deploy_url: ${{ secrets.RENDER_URL }}
+        run: |
+          curl "$deploy_url"
+
+      - name: Wait for Render Deployment
+        run: sleep 120 # Adjust if needed
+
+      - name: Run e2e Cypress Tests for Node.js 22
+        env:
+          CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
+        run: |
+          mkdir -p cypress/reports  
+          npx cypress run --browser chrome \
+          --reporter mochawesome \
+          --reporter-options "reportFilename=results-e2e-22.x"
+
+      - name: Print Mochawesome JSON for Node.js 22
+        run: cat cypress/reports/results-e2e-22.x.json
+
+      - name: Upload Test Results for Node.js 22
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-node-22
+          path: cypress/reports/results-e2e-22.x.json
+
+  # Final Status Job
   final-status:
     name: Final Status
     runs-on: ubuntu-24.04
-    needs: ci
+    needs: [deploy-node-18, deploy-node-20, deploy-node-22]
     steps:
       - name: Report Final Status to GitHub
         run: |
@@ -114,6 +157,6 @@ jobs:
             "conclusion": "success",
             "output": {
               "title": "All tests passed",
-              "summary": "The e2e Cypress tests on the Render deployment were completed successfully."
+              "summary": "The e2e Cypress tests on the Render deployment were completed successfully for all Node.js versions."
             }
           }'

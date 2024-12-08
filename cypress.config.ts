@@ -26,7 +26,13 @@ export default defineConfig({
       json: true, // Generate JSON reports
     },
     setupNodeEvents(on, config) {
-      // Add any e2e-specific event listeners here
+      on("after:spec", (spec, results) => {
+        console.log(`Spec finished: ${spec.name}`);
+        if (results && results.stats.failures) {
+          console.log(`Failures detected: ${results.stats.failures}`);
+        }
+      });
+      // return config; - if needed for additional configuration / hooks
     },
   },
 });
