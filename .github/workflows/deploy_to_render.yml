@@ -61,7 +61,7 @@ jobs:
           mkdir -p cypress/reports  
           npm run test \
           --reporter mochawesome \
-          --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-${{ matrix.node-version }},overwrite=true,html=false,json=true"
+          --reporter-options "reportFilename=results-e2e-${{ matrix.node-version }}"
 
       # Test summary output and JSON report
       - name: Print Mochawesome JSON
