@@ -230,14 +230,28 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Download all test artifacts
-      - name: Download All Test Logs
+      # Step 2: Download Test Logs for Node.js 18.x
+      - name: Download Test Logs for Node.js 18.x
         uses: actions/download-artifact@v4
         with:
-          name: results-e2e-*
+          name: results-e2e-18.x
           path: cypress/reports
 
-      # Step 3: Aggregate results into a single summary
+      # Step 3: Download Test Logs for Node.js 20.x
+      - name: Download Test Logs for Node.js 20.x
+        uses: actions/download-artifact@v4
+        with:
+          name: results-e2e-20.x
+          path: cypress/reports
+
+      # Step 4: Download Test Logs for Node.js 22.x
+      - name: Download Test Logs for Node.js 22.x
+        uses: actions/download-artifact@v4
+        with:
+          name: results-e2e-22.x
+          path: cypress/reports
+
+      # Step 5: Aggregate results into a single summary
       - name: Aggregate Results
         run: |
           echo "## Aggregate Test Summary" > aggregate-summary.txt
@@ -247,18 +261,18 @@ jobs:
             cat "$file" >> aggregate-summary.txt
           done
 
-      # Step 4: Print the aggregated summary
+      # Step 6: Print the aggregated summary
       - name: Print Aggregate Summary
         run: cat aggregate-summary.txt
 
-      # Step 5: Upload the final aggregated test summary
+      # Step 7: Upload the final aggregated test summary
       - name: Upload Final Test Summary
         uses: actions/upload-artifact@v4
         with:
           name: aggregate-summary
           path: aggregate-summary.txt
 
-      # Step 6: Report final status to GitHub
+      # Step 8: Report final status to GitHub
       - name: Report Final Status to GitHub
         run: |
           curl -X POST \
