@@ -25,21 +25,19 @@ This version of the application integrates Continuous Integration (CI) and Conti
 
 **GitHub Actions for Testing & Render Deployment before Merge is Allowed**
 
-![CICD Testing Screenshot #1](./github_assets/cicd_screenshot_02.png)
+![CICD Testing Screenshot #1](./github_assets/cicd_screenshot_Checking_Develop_PR.png)
 
-![CICD Testing Screenshot #2](./github_assets/cicd_screenshot_03.png)
+![CICD Testing Screenshot #2](./github_assets/cicd_screenshot_Checking_Develop_PR_PASSED.png)
 
-![CICD Testing Screenshot #3](./github_assets/cicd_screenshot_04.png)
-
-![CICD Testing Screenshot #4](./github_assets/cicd_screenshot_05.png)
-
-![CICD Testing Screenshot #5](./github_assets/cicd_screenshot_06.png)
+![CICD Testing Screenshot #3](./github_assets/cicd_screenshot_Checking_Develop_PR_MERGE.png)
 
 **main Branch Can Only be Merged from develop** - Attempting to push from a feature branch will fail
 
-![CICD Testing Screenshot #6](./github_assets/cicd_screenshot_07.png)
+![CICD Testing Screenshot #4](./github_assets/cicd_screenshot_Main_PR.png)
 
-![CICD Testing Screenshot #7](./github_assets/cicd_screenshot_08.png)
+![CICD Testing Screenshot #5](./github_assets/cicd_screenshot_Main_PR_DEPLOYPASSED.png)
+
+![CICD Testing Screenshot #6](./github_assets/cicd_screenshot_Main_PR_MERGE.png)
 
 ---
 
@@ -99,10 +97,10 @@ Start the development server:
 npm run develop
 ```
 
-Access the application locally:
+Access the application locally: (default values)
 
 - **Frontend:** `http://localhost:3000`
-- **Backend:** `http://localhost:5000`
+- **Backend:** `http://localhost:3001`
 
 ---
 
