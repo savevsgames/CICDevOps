@@ -18,6 +18,7 @@ export default defineConfig({
   },
   e2e: {
     baseUrl: process.env.CYPRESS_BASE_URL || "https://cicdevops.onrender.com/",
+    reporter: "mochawesome", // Mochawesome is the default reporter
     reporterOptions: {
       reportDir: "cypress/reports", // Directory to save reports
       overwrite: true, // Overwrite existing reports
