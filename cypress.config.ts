@@ -26,7 +26,6 @@ export default defineConfig({
     reporter: "mochawesome",
     reporterOptions: {
       reportDir: "cypress/reports", // Ensure consistent report directory
-      reportFilename: "results-e2e-[nodeVersion]", // Placeholder for dynamic naming
       overwrite: true, // Overwrite existing reports
       html: false, // Disable HTML reports
       json: true, // Generate JSON reports
