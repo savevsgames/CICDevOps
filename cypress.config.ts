@@ -29,10 +29,12 @@ export default defineConfig({
     reporter: "mochawesome",
     reporterOptions: {
       reportDir: "cypress/reports",
+      reportFilename: `results-e2e-${
+        process.env.NODE_VERSION || "mochawesome.json"
+      }`, // Dynamically name the report with fallback
       overwrite: true,
       html: false,
       json: true,
-      reportFilename: "mochawesome", // Temporary filename
     },
     setupNodeEvents(on, config) {
       // Hook to rename the report file dynamically
