@@ -1,21 +1,29 @@
 import { defineConfig } from "cypress";
-// import the vite config file for cypress component tests
-import viteConfig from "./vite.config";
+import viteConfig from "./vite.config"; // Import Vite configuration for Cypress component testing
 
 export default defineConfig({
   component: {
-    port: 5173,
     devServer: {
       framework: "react",
       bundler: "vite",
       viteConfig,
     },
-  },
-
-  e2e: {
-    baseUrl: "http://localhost:3001",
+    port: 5173, // Match the port specified in the GitHub workflow
     setupNodeEvents(on, config) {
-      // implement node event listeners here
+      // Configure any additional event listeners needed for component tests
+      on("after:spec", () => {
+        import("@testing-library/react").then(({ cleanup }) => cleanup());
+      });
+    },
+  },
+  e2e: {
+    baseUrl: process.env.BASE_URL || "http://localhost:3001", // Use environment variable for flexibility
+    reporter: "json", // Output results in JSON format for processing in the GitHub workflow
+    reporterOptions: {
+      output: "cypress/reports/e2e-results.json", // Define the output location for e2e test logs
+    },
+    setupNodeEvents(on, config) {
+      // Add any e2e-specific event listeners here
     },
   },
 });

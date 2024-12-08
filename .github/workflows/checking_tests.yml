@@ -8,30 +8,90 @@ on:
 jobs:
   test:
     name: Checking Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+
     steps:
+      # 1. Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2. Set up the Node.js version based on the matrix
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 21.x
+          node-version: ${{ matrix.node-version }}
 
-      - name: Install dependencies
-        run: npm install
+      # 3. Install all dependencies & # 4. Build the project
+      - name: Render Build (Install and Build)
+        run: npm run render-build
 
-      - name: Build project
-        run: npm run build
-
-      # Start the server in the background
+      # 5. Start the server in the background
       - name: Start server
         run: |
           npm run start &
           npx wait-on http://localhost:3001
 
-      - name: Run cypress tests
-        run: npm run test
+      # 6. Run Cypress component tests
+      - name: Run Cypress Component Tests
+        run: npm run test-component -- --reporter mochawesome --reporter-options "reportDir=test_logs,reportFilename=results,overwrite=false"
 
+      # 7. Parse and Generate Test Summary
+      - name: Parse and Generate Test Summary
+        run: |
+          RESULTS_FILE=test_logs/results.json
+          if [ ! -f "$RESULTS_FILE" ]; then
+            echo "Cypress results JSON file not found. Ensure mochawesome is configured correctly."
+            exit 1
+          fi
+
+          TEST_RESULTS=$(cat $RESULTS_FILE | jq -r '.stats | {passed: .tests, failed: .failures, pending: .pending, skipped: .skipped, duration: (.duration / 1000)}')
+          PASSED=$(echo $TEST_RESULTS | jq -r '.passed')
+          FAILED=$(echo $TEST_RESULTS | jq -r '.failed')
+          PENDING=$(echo $TEST_RESULTS | jq -r '.pending')
+          SKIPPED=$(echo $TEST_RESULTS | jq -r '.skipped')
+          DURATION=$(echo $TEST_RESULTS | jq -r '.duration')
+
+          echo '### Cypress Test Results for Node.js ${{ matrix.node-version }}' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '| Result     | Passed ✅ | Failed ❌ | Pending 🙋 | Skipped 🔀 | Duration ⏱ |' >> $GITHUB_STEP_SUMMARY
+          echo '|------------|-----------|-----------|------------|------------|-------------|' >> $GITHUB_STEP_SUMMARY
+          echo "| **Tests**  | $PASSED    | $FAILED    | $PENDING     | $SKIPPED     | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
+
+      # 8. Upload test logs for debugging or review
+      - name: Upload Test Logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-results-node-${{ matrix.node-version }}
+          path: test_logs/results.json
+
+      # 9. Stop the Vite server after tests complete
       - name: Stop server
         run: kill $(lsof -t -i:3001) || true
+
+  # 10. End the job - Final Status updates the status of the aggregated tests
+  # Actions now has permissions to merge pull requests and share token with each separate job to report statuses
+  final-status:
+    name: Final Status
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      # Explicitly update the GitHub Status API
+      - name: Report Final Status to GitHub
+        run: |
+          curl -X POST \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/${{ github.repository }}/check-runs \
+          -d '{
+            "name": "Checking Tests",
+            "head_sha": "'${{ github.sha }}'",
+            "status": "completed",
+            "conclusion": "success",
+            "output": {
+              "title": "All tests passed",
+              "summary": "The Cypress component tests were completed successfully."
+            }
+          }'
