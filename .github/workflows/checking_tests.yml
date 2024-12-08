@@ -8,7 +8,7 @@ on:
 jobs:
   test:
     name: Checking Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
@@ -62,7 +62,7 @@ jobs:
 
       # 8. Upload test logs for debugging or review
       - name: Upload Test Logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cypress-results-node-${{ matrix.node-version }}
           path: test_logs/results.json
