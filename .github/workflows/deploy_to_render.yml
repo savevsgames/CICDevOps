@@ -49,11 +49,10 @@ jobs:
       - name: Run Cypress Tests for Node.js 18.x
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
+          NODE_VERSION: "18.x"
         run: |
           mkdir -p cypress/reports
-          npx cypress run --browser chrome \
-          --reporter mochawesome \
-          --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-18.x,overwrite=true,html=false,json=true"
+          npx cypress run --browser chrome
 
       # Step 9: Upload test results for Node.js 18.x
       - name: Upload Test Results for Node.js 18.x
@@ -69,7 +68,7 @@ jobs:
     needs: deploy-node-18
 
     steps:
-      # Steps follow the same pattern as for Node.js 18.x
+      # Repeat steps as above with Node.js 20.x
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -98,11 +97,10 @@ jobs:
       - name: Run Cypress Tests for Node.js 20.x
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
+          NODE_VERSION: "20.x"
         run: |
           mkdir -p cypress/reports
-          npx cypress run --browser chrome \
-          --reporter mochawesome \
-          --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-20.x,overwrite=true,html=false,json=true"
+          npx cypress run --browser chrome
 
       - name: Upload Test Results for Node.js 20.x
         uses: actions/upload-artifact@v4
@@ -117,7 +115,7 @@ jobs:
     needs: deploy-node-20
 
     steps:
-      # Steps follow the same pattern as for Node.js 18.x
+      # Repeat steps as above with Node.js 22.x
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -146,11 +144,10 @@ jobs:
       - name: Run Cypress Tests for Node.js 22.x
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
+          NODE_VERSION: "22.x"
         run: |
           mkdir -p cypress/reports
-          npx cypress run --browser chrome \
-          --reporter mochawesome \
-          --reporter-options "reportDir=cypress/reports,reportFilename=results-e2e-22.x,overwrite=true,html=false,json=true"
+          npx cypress run --browser chrome
 
       - name: Upload Test Results for Node.js 22.x
         uses: actions/upload-artifact@v4
