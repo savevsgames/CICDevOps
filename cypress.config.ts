@@ -1,6 +1,9 @@
 import { defineConfig } from "cypress";
 import viteConfig from "./vite.config"; // Import Vite configuration for Cypress component testing
 
+import { renameSync } from "fs"; // For renaming the report file
+import { join } from "path"; // For joining paths in the report file
+
 export default defineConfig({
   component: {
     devServer: {
@@ -25,18 +28,25 @@ export default defineConfig({
     baseUrl: process.env.CYPRESS_BASE_URL || "https://cicdevops.onrender.com",
     reporter: "mochawesome",
     reporterOptions: {
-      reportDir: "cypress/reports", // Ensure consistent report directory
-      overwrite: true, // Overwrite existing reports
-      html: false, // Disable HTML reports
-      json: true, // Generate JSON reports
+      reportDir: "cypress/reports",
+      overwrite: true,
+      html: false,
+      json: true,
+      reportFilename: "mochawesome", // Temporary filename
     },
     setupNodeEvents(on, config) {
-      on("after:spec", (spec, results) => {
-        console.log(`Spec finished: ${spec.relative}`);
-        if (results && results.stats.failures) {
-          console.log(
-            `Failures detected in ${spec.relative}: ${results.stats.failures}`
-          );
+      // Hook to rename the report file dynamically
+      on("after:run", () => {
+        const nodeVersion = process.env.NODE_VERSION || "unknown-version";
+        const reportsDir =
+          config.reporterOptions.reportDir || "cypress/reports";
+        const oldFilename = join(reportsDir, "mochawesome.json");
+        const newFilename = join(reportsDir, `results-e2e-${nodeVersion}.json`);
+        try {
+          renameSync(oldFilename, newFilename);
+          console.log(`Renamed report to: ${newFilename}`);
+        } catch (err) {
+          console.error(`Error renaming file: ${err.message}`);
         }
       });
       return config;
