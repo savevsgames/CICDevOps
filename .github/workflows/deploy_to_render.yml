@@ -35,9 +35,15 @@ jobs:
       - name: Render Build (Install and Build)
         run: npm run render-build
 
+      # Make sure the pull request is to the main branch - troubleshooting step
+      - name: Debug Ref Information
+        run: |
+          echo "github.ref: ${{ github.ref }}"
+          echo "github.event.pull_request.base.ref: ${{ github.event.pull_request.base.ref }}"
+
       # Deploy to Render
       - name: Deploy to Render
-        if: github.ref == 'refs/heads/main'
+        if: github.event.pull_request.base.ref == 'main'
         env:
           deploy_url: ${{ secrets.RENDER_URL }}
         run: |
