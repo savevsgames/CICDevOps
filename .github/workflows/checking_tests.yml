@@ -9,41 +9,48 @@ jobs:
   test:
     name: Checking Tests
     runs-on: ubuntu-24.04
+
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
 
     steps:
-      # 1. Checkout the repository
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Set up the Node.js version based on the matrix
-      - name: Set up Node.js
+      # Step 2: Set up Node.js
+      - name: Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
-      # 3. Install all dependencies & # 4. Build the project
+      # Step 3: Build project
       - name: Render Build (Install and Build)
         run: npm run render-build
 
-      # 5. Start the server in the background
+      # Step 4: Start the Vite server
       - name: Start server
         run: |
           npm run start &
           npx wait-on http://localhost:3001
 
-      # 6. Run Cypress component tests
-      - name: Run Cypress Component Tests
-        run: npm run test-component -- --reporter mochawesome --reporter-options "reportDir=test_logs,reportFilename=results,overwrite=false"
+      # Step 5: Run Cypress component tests
+      - name: Run Cypress Component Tests for Node.js ${{ matrix.node-version }}
+        env:
+          NODE_VERSION: "${{ matrix.node-version }}"
+        run: |
+          mkdir -p test_logs
+          npx cypress run --component \
+          --reporter mochawesome \
+          --reporter-options "reportDir=test_logs,reportFilename=results-${{ env.NODE_VERSION }},overwrite=true,html=false,json=true"
 
-      # 7. Parse and Generate Test Summary
+      # Step 6: Parse results and generate summary
       - name: Parse and Generate Test Summary
         run: |
-          RESULTS_FILE=test_logs/results.json
+          RESULTS_FILE=test_logs/results-${{ matrix.node-version }}.json
           if [ ! -f "$RESULTS_FILE" ]; then
-            echo "Cypress results JSON file not found. Ensure mochawesome is configured correctly."
+            echo "Cypress results JSON file not found. Ensure results-${{ matrix.node-version }}.json is configured correctly."
             exit 1
           fi
 
@@ -54,31 +61,69 @@ jobs:
           SKIPPED=$(echo $TEST_RESULTS | jq -r '.skipped')
           DURATION=$(echo $TEST_RESULTS | jq -r '.duration')
 
-          echo '### Cypress Test Results for Node.js ${{ matrix.node-version }}' >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
-          echo '| Result     | Passed ✅ | Failed ❌ | Pending 🙋 | Skipped 🔀 | Duration ⏱ |' >> $GITHUB_STEP_SUMMARY
-          echo '|------------|-----------|-----------|------------|------------|-------------|' >> $GITHUB_STEP_SUMMARY
-          echo "| **Tests**  | $PASSED    | $FAILED    | $PENDING     | $SKIPPED     | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
+          echo '### Cypress Component Test Results for Node.js ${{ matrix.node-version }}' >> test_logs/summary-${{ matrix.node-version }}.txt
+          echo '| Node Version | Passed ✅ | Failed ❌ | Pending 🙋 | Skipped 🔀 | Duration ⏱ |' >> test_logs/summary-${{ matrix.node-version }}.txt
+          echo '|--------------|-----------|-----------|------------|------------|-------------|' >> test_logs/summary-${{ matrix.node-version }}.txt
+          echo "| ${{ matrix.node-version }} | $PASSED | $FAILED | $PENDING | $SKIPPED | ${DURATION}s |" >> test_logs/summary-${{ matrix.node-version }}.txt
 
-      # 8. Upload test logs for debugging or review
-      - name: Upload Test Logs
+      # Step 7: Upload logs
+      - name: Upload Test Logs and Summary for Node.js ${{ matrix.node-version }}
         uses: actions/upload-artifact@v4
         with:
-          name: cypress-results-node-${{ matrix.node-version }}
-          path: test_logs/results.json
+          name: test-results-${{ matrix.node-version }}
+          path: test_logs/
 
-      # 9. Stop the Vite server after tests complete
+      # Step 8: Stop the Vite server
       - name: Stop server
         run: kill $(lsof -t -i:3001) || true
 
-  # 10. End the job - Final Status updates the status of the aggregated tests
-  # Actions now has permissions to merge pull requests and share token with each separate job to report statuses
+  # Final job to aggregate results and report
   final-status:
     name: Final Status
     runs-on: ubuntu-24.04
     needs: test
+
     steps:
-      # Explicitly update the GitHub Status API
+      # Step 1: Download all test logs
+      - name: Download Test Logs for Node.js 18.x
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results-18.x
+          path: test_logs_18x/
+
+      - name: Download Test Logs for Node.js 20.x
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results-20.x
+          path: test_logs_20x/
+
+      - name: Download Test Logs for Node.js 22.x
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results-22.x
+          path: test_logs_22x/
+
+      # Step 2: Aggregate results
+      - name: Aggregate Results
+        run: |
+          echo "## Aggregate Test Summary" > aggregate-summary.txt
+          echo "" >> aggregate-summary.txt
+          cat test_logs_18x/summary-18.x.txt >> aggregate-summary.txt
+          cat test_logs_20x/summary-20.x.txt >> aggregate-summary.txt
+          cat test_logs_22x/summary-22.x.txt >> aggregate-summary.txt
+
+      # Step 3: Print the summary
+      - name: Print Aggregate Summary
+        run: cat aggregate-summary.txt
+
+      # Step 4: Upload final test summary
+      - name: Upload Final Test Summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: aggregate-summary
+          path: aggregate-summary.txt
+
+      # Step 5: Report Final Status to GitHub
       - name: Report Final Status to GitHub
         run: |
           curl -X POST \
@@ -92,6 +137,6 @@ jobs:
             "conclusion": "success",
             "output": {
               "title": "All tests passed",
-              "summary": "The Cypress component tests were completed successfully."
+              "summary": "The Cypress component tests were completed successfully for all Node.js versions."
             }
           }'

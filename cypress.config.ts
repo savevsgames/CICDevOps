@@ -10,23 +10,37 @@ export default defineConfig({
     },
     port: 5173, // Match the port specified in the GitHub workflow
     setupNodeEvents(on, config) {
-      // Configure any additional event listeners needed for component tests
-      on("after:spec", () => {
-        import("@testing-library/react").then(({ cleanup }) => cleanup());
+      on("after:spec", (spec, results) => {
+        console.log(`Component Spec finished: ${spec.relative}`);
+        if (results && results.stats.failures) {
+          console.log(
+            `Failures detected in ${spec.relative}: ${results.stats.failures}`
+          );
+        }
       });
+      return config; // Return the updated config
     },
   },
   e2e: {
-    baseUrl: process.env.CYPRESS_BASE_URL || "https://cicdevops.onrender.com/",
-    reporter: "mochawesome", // Mochawesome is the default reporter
+    baseUrl: process.env.CYPRESS_BASE_URL || "https://cicdevops.onrender.com",
+    reporter: "mochawesome",
     reporterOptions: {
-      reportDir: "cypress/reports", // Directory to save reports
+      reportDir: "cypress/reports", // Ensure consistent report directory
+      reportFilename: "results-e2e-[nodeVersion]", // Placeholder for dynamic naming
       overwrite: true, // Overwrite existing reports
       html: false, // Disable HTML reports
       json: true, // Generate JSON reports
     },
     setupNodeEvents(on, config) {
-      // Add any e2e-specific event listeners here
+      on("after:spec", (spec, results) => {
+        console.log(`Spec finished: ${spec.relative}`);
+        if (results && results.stats.failures) {
+          console.log(
+            `Failures detected in ${spec.relative}: ${results.stats.failures}`
+          );
+        }
+      });
+      return config; // Pass the configuration to Cypress
     },
   },
 });
