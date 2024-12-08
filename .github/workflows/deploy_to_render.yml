@@ -7,12 +7,13 @@ on:
     branches: [main]
 
 jobs:
-  ci:
+  deploy:
     name: Deploy to Render
     runs-on: ubuntu-24.04
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,45 +25,51 @@ jobs:
             exit 1
           fi
 
-      # Set up parallel jobs for each node version in the matrix
+      # Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Build and Install for Render
+      # Build and Install for Render
+      - name: Render Build (Install and Build)
         run: npm run render-build
 
-      - name: Deploy
-        # Only run this if the branch is main
+      # Deploy to Render
+      - name: Deploy to Render
         if: github.ref == 'refs/heads/main'
         env:
           deploy_url: ${{ secrets.RENDER_URL }}
-        # This is the command that will be run on Render to start a deploy using the webhook URL from Render
         run: |
           curl "$deploy_url"
 
+      # Wait for Render Deployment
       - name: Wait for Render Deployment
-        run: |
-          sleep 120 # Wait for Render to deploy the app ~2mins (might need to change)
+        run: sleep 120 # Adjust if needed
 
-      - name: Run e2e Cypress Tests on Render
+      # Run Cypress e2e Tests on Render
+      - name: Run e2e Cypress Tests
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
         run: |
           mkdir -p cypress/reports  
-          npx cypress run --browser electron
+          npx cypress run --browser electron \
           --reporter mochawesome \
-          --reporter-options reportDir=cypress/reports,overwrite=true,html=false,json=true \
+          --reporter-options reportDir=cypress/reports,overwrite=true,html=false,json=true
 
-      # Test summary output json file
+      # Test summary output and JSON report
       - name: Print Mochawesome JSON
         run: cat cypress/reports/mochawesome.json
 
-      # Generate test summary
       - name: Generate Test Summary
         run: |
-          TEST_RESULTS=$(cat cypress/reports/mochawesome.json | jq -r '.stats')
+          RESULTS_FILE=cypress/reports/mochawesome.json
+          if [ ! -f "$RESULTS_FILE" ]; then
+            echo "Cypress results JSON file not found. Ensure mochawesome is configured correctly."
+            exit 1
+          fi
+
+          TEST_RESULTS=$(cat $RESULTS_FILE | jq -r '.stats')
           PASSED=$(echo $TEST_RESULTS | jq -r '.passes')
           FAILED=$(echo $TEST_RESULTS | jq -r '.failures')
           PENDING=$(echo $TEST_RESULTS | jq -r '.pending')
@@ -74,12 +81,33 @@ jobs:
           echo '| Result     | Passed ✅ | Failed ❌ | Pending 🙋 | Skipped 🔀 | Duration ⏱ |' >> $GITHUB_STEP_SUMMARY
           echo '|------------|-----------|-----------|------------|------------|-------------|' >> $GITHUB_STEP_SUMMARY
           echo "| **Tests**  | $PASSED    | $FAILED    | $PENDING     | $SKIPPED     | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
-          echo '**Job summary generated at run-time.**' >> $GITHUB_STEP_SUMMARY
 
-      # Upload the artifact - json results file
+      # Upload the artifact - test results JSON
       - name: Upload Test Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: cypress/reports/mochawesome.json
+
+  # Final Status Job to Update GitHub Status
+  final-status:
+    name: Final Status
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Report Final Status to GitHub
+        run: |
+          curl -X POST \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/${{ github.repository }}/check-runs \
+          -d '{
+            "name": "Deploy to Render",
+            "head_sha": "'${{ github.sha }}'",
+            "status": "completed",
+            "conclusion": "success",
+            "output": {
+              "title": "All tests passed",
+              "summary": "The e2e Cypress tests on the Render deployment were completed successfully."
+            }
+          }'

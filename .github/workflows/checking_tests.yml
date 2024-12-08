@@ -72,8 +72,7 @@ jobs:
         run: kill $(lsof -t -i:3001) || true
 
   # 10. End the job - Final Status updates the status of the aggregated tests
-  #     Actions now has permissions to merge pull requests
-  #     and share token with each separate job to report statuses
+  # Actions now has permissions to merge pull requests and share token with each separate job to report statuses
   final-status:
     name: Final Status
     runs-on: ubuntu-latest
