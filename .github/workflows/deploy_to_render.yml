@@ -65,13 +65,13 @@ jobs:
 
       # Test summary output and JSON report
       - name: Print Mochawesome JSON
-        run: cat cypress/reports/mochawesome.json
+        run: cat cypress/reports/results-e2e-${{ matrix.node-version }}.json
 
       - name: Generate Test Summary
         run: |
-          RESULTS_FILE=cypress/reports/mochawesome.json
+          RESULTS_FILE=cypress/reports/results-e2e-${{ matrix.node-version }}.json
           if [ ! -f "$RESULTS_FILE" ]; then
-            echo "Cypress results JSON file not found. Ensure mochawesome is configured correctly."
+            echo "Cypress results JSON file not found. Ensure results-e2e-${{ matrix.node-version }} is configured correctly."
             exit 1
           fi
 
@@ -93,12 +93,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: cypress/reports/mochawesome.json
+          path: cypress/reports/results-e2e-${{ matrix.node-version }}.json
 
   # Final Status Job to Update GitHub Status
   final-status:
     name: Final Status
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: deploy
     steps:
       - name: Report Final Status to GitHub
