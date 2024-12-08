@@ -67,11 +67,11 @@ jobs:
           echo "| ${{ matrix.node-version }} | $PASSED | $FAILED | $PENDING | $SKIPPED | ${DURATION}s |" >> test_logs/summary.txt
 
       # Step 7: Upload logs
-      - name: Upload Test Logs for Node.js ${{ matrix.node-version }}
+      - name: Upload Test Logs and Summary
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.node-version }}
-          path: test_logs/results-${{ matrix.node-version }}.json
+          path: test_logs/
 
       # Step 8: Stop the Vite server
       - name: Stop server
@@ -84,16 +84,19 @@ jobs:
     needs: test
 
     steps:
-      # Step 1: Checkout repository
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # Step 1: Download all test logs
+      - name: Download Test Logs and Summaries
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results-${{ matrix.node-version }}
+          path: test_logs/
 
       # Step 2: Aggregate results
       - name: Aggregate Results
         run: |
           echo "## Aggregate Test Summary" > aggregate-summary.txt
           echo "" >> aggregate-summary.txt
-          cat test_logs/summary.txt >> aggregate-summary.txt
+          find test_logs/ -name "summary.txt" -exec cat {} + >> aggregate-summary.txt
 
       # Step 3: Print the summary
       - name: Print Aggregate Summary
