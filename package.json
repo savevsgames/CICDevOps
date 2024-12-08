@@ -31,6 +31,7 @@
     "wait-on": "^8.0.1"
   },
   "dependencies": {
+    "@testing-library/react": "^16.1.0",
     "@vitejs/plugin-react": "^4.3.1",
     "vitest": "^2.0.3"
   }

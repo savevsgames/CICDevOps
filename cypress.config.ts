@@ -1,34 +1,29 @@
 import { defineConfig } from "cypress";
-// import the vite config file for cypress component tests
-import viteConfig from "./vite.config";
+import viteConfig from "./vite.config"; // Import Vite config for Cypress component testing
 
 export default defineConfig({
   component: {
-    port: 5173,
     devServer: {
       framework: "react",
       bundler: "vite",
       viteConfig,
     },
-    retries: {
-      runMode: 2, // Retry failed tests up to 2 times
-      openMode: 0, // No retries when running in interactive mode
-    },
-    requestTimeout: 5000, // For API calls
-    responseTimeout: 10000, // For server responses
+    port: 5173,
     setupNodeEvents(on, config) {
-      // Add component test-specific event listeners here
+      // Cleanup after each test
+      on("after:spec", () => {
+        import("@testing-library/react").then(({ cleanup }) => cleanup());
+      });
     },
   },
-
   e2e: {
-    baseUrl: process.env.CYPRESS_BASE_URL || "http://localhost:3001", // Default to local server
-    reporter: "json", // JSON reporter for e2e
+    baseUrl: process.env.CYPRESS_BASE_URL || "http://localhost:3001",
+    reporter: "json", // Save e2e test results as JSON
     reporterOptions: {
-      output: "cypress/reports/e2e-results.json", // Path for saving test results
+      output: "cypress/reports/e2e-results.json",
     },
     setupNodeEvents(on, config) {
-      // Add e2e test-specific event listeners here
+      // Add e2e-specific event listeners here
     },
   },
 });
