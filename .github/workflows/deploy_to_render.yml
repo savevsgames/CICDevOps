@@ -54,10 +54,21 @@ jobs:
           mkdir -p cypress/reports
           npx cypress run --browser chrome
 
-      # Step 9: Rename Test Results
-      - name: Rename Test Results for Node.js 18.x
+      # Step 9: Check and Rename Test Results
+      - name: Check and Rename Test Results for Node.js 18.x
         run: |
-          mv cypress/reports/mochawesome.json cypress/reports/results-e2e-18.x.json
+          if [ ! -f "cypress/reports/results-e2e-18.x.json" ]; then
+            echo "Dynamic report file not found. Checking for mochawesome.json..."
+            if [ -f "cypress/reports/mochawesome.json" ]; then
+              mv cypress/reports/mochawesome.json cypress/reports/results-e2e-18.x.json
+              echo "Renamed mochawesome.json to results-e2e-18.x.json"
+            else
+              echo "No mochawesome.json found. Failing step."
+              exit 1
+            fi
+          else
+            echo "Dynamic report file exists. No renaming required."
+          fi
 
       # Step 10: Upload Test Results for Node.js 18.x
       - name: Upload Test Results for Node.js 18.x
@@ -73,32 +84,39 @@ jobs:
     needs: deploy-node-18
 
     steps:
-      # Repeat steps as above with Node.js 20.x
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Step 2: Set up Node.js 20.x
       - name: Set up Node.js 20.x
         uses: actions/setup-node@v4
         with:
           node-version: 20.x
 
+      # Step 3: Build the project for deployment
       - name: Render Build for Node.js 20.x
         run: npm run render-build
 
+      # Step 4: Deploy to Render
       - name: Deploy to Render for Node.js 20.x
         env:
           deploy_url: ${{ secrets.RENDER_URL }}
         run: curl "$deploy_url"
 
+      # Step 5: Initial Sleep to Allow Render Update
       - name: Initial Sleep to Allow Render Update
         run: sleep 30
 
+      # Step 6: Wait for Deployment for Node.js 20.x
       - name: Wait for Deployment for Node.js 20.x
         run: npx wait-on https://cicdevops.onrender.com
 
+      # Step 7: Additional wait to ensure deployment is fully ready
       - name: Wait 2 Minutes
         run: sleep 120
 
+      # Step 8: Run Cypress Tests for Node.js 20.x
       - name: Run Cypress Tests for Node.js 20.x
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
@@ -107,10 +125,23 @@ jobs:
           mkdir -p cypress/reports
           npx cypress run --browser chrome
 
-      - name: Rename Test Results for Node.js 20.x
+      # Step 9: Check and Rename Test Results
+      - name: Check and Rename Test Results for Node.js 20.x
         run: |
-          mv cypress/reports/mochawesome.json cypress/reports/results-e2e-20.x.json
+          if [ ! -f "cypress/reports/results-e2e-20.x.json" ]; then
+            echo "Dynamic report file not found. Checking for mochawesome.json..."
+            if [ -f "cypress/reports/mochawesome.json" ]; then
+              mv cypress/reports/mochawesome.json cypress/reports/results-e2e-20.x.json
+              echo "Renamed mochawesome.json to results-e2e-20.x.json"
+            else
+              echo "No mochawesome.json found. Failing step."
+              exit 1
+            fi
+          else
+            echo "Dynamic report file exists. No renaming required."
+          fi
 
+      # Step 10: Upload Test Results for Node.js 20.x
       - name: Upload Test Results for Node.js 20.x
         uses: actions/upload-artifact@v4
         with:
@@ -124,32 +155,39 @@ jobs:
     needs: deploy-node-20
 
     steps:
-      # Repeat steps as above with Node.js 22.x
+      # Step 1: Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Step 2: Set up Node.js 22.x
       - name: Set up Node.js 22.x
         uses: actions/setup-node@v4
         with:
           node-version: 22.x
 
+      # Step 3: Build the project for deployment
       - name: Render Build for Node.js 22.x
         run: npm run render-build
 
+      # Step 4: Deploy to Render
       - name: Deploy to Render for Node.js 22.x
         env:
           deploy_url: ${{ secrets.RENDER_URL }}
         run: curl "$deploy_url"
 
+      # Step 5: Initial Sleep to Allow Render Update
       - name: Initial Sleep to Allow Render Update
         run: sleep 30
 
+      # Step 6: Wait for Deployment for Node.js 22.x
       - name: Wait for Deployment for Node.js 22.x
         run: npx wait-on https://cicdevops.onrender.com
 
+      # Step 7: Additional wait to ensure deployment is fully ready
       - name: Wait 2 Minutes
         run: sleep 120
 
+      # Step 8: Run Cypress Tests for Node.js 22.x
       - name: Run Cypress Tests for Node.js 22.x
         env:
           CYPRESS_BASE_URL: "https://cicdevops.onrender.com"
@@ -158,10 +196,23 @@ jobs:
           mkdir -p cypress/reports
           npx cypress run --browser chrome
 
-      - name: Rename Test Results for Node.js 22.x
+      # Step 9: Check and Rename Test Results
+      - name: Check and Rename Test Results for Node.js 22.x
         run: |
-          mv cypress/reports/mochawesome.json cypress/reports/results-e2e-22.x.json
+          if [ ! -f "cypress/reports/results-e2e-22.x.json" ]; then
+            echo "Dynamic report file not found. Checking for mochawesome.json..."
+            if [ -f "cypress/reports/mochawesome.json" ]; then
+              mv cypress/reports/mochawesome.json cypress/reports/results-e2e-22.x.json
+              echo "Renamed mochawesome.json to results-e2e-22.x.json"
+            else
+              echo "No mochawesome.json found. Failing step."
+              exit 1
+            fi
+          else
+            echo "Dynamic report file exists. No renaming required."
+          fi
 
+      # Step 10: Upload Test Results for Node.js 22.x
       - name: Upload Test Results for Node.js 22.x
         uses: actions/upload-artifact@v4
         with:
