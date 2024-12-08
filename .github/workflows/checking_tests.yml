@@ -30,6 +30,7 @@ jobs:
         run: npm run render-build
 
       # Step 4: Start the Vite server
+      # Future Option to Improve Robustness of test: Use VITE_CYPRESS_BASE_URL for env variable.
       - name: Start server
         run: |
           npm run start &
