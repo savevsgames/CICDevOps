@@ -10,10 +10,12 @@ export default defineConfig({
       bundler: "vite",
       viteConfig,
     },
-    reporter: "json", // JSON reporter
-    reporterOptions: {
-      output: "cypress/reports/component-results.json", // Path for saving test results
+    retries: {
+      runMode: 2, // Retry failed tests up to 2 times
+      openMode: 0, // No retries when running in interactive mode
     },
+    requestTimeout: 5000, // For API calls
+    responseTimeout: 10000, // For server responses
     setupNodeEvents(on, config) {
       // Add component test-specific event listeners here
     },

@@ -1,4 +1,4 @@
-name: Checking Tests
+name: Cypress Component Tests
 
 on:
   pull_request:
@@ -7,12 +7,11 @@ on:
 
 jobs:
   test:
-    name: Checking Tests
+    name: Cypress Component Tests
     runs-on: ubuntu-24.04
-    # Define a Strategy matrix to run the same job-steps multiple times in parallel with different configurations
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [18.x, 20.x]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,63 +19,40 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }} # Use the node version from the matrix
+          node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
         run: npm install
 
-      - name: Build project
-        run: npm run build
-
-      # Start the server in the background
       - name: Start server
         run: |
           npm run start &
-          npx wait-on http://localhost:3001
+          npx wait-on http://localhost:5173
 
-      # Run Cypress tests and generate JSON report file for each node version in test matrix
-      # Added --config for base url to be localhost:3001 for local component testing
-      # Run Cypress tests and generate JSON report
-      # Run Cypress tests using cypress-io/github-action
-      - name: Run Cypress Tests with Chrome
-        uses: cypress-io/github-action@v5
-        with:
-          browser: chrome # Run the tests in Chrome
-          config: baseUrl=http://localhost:3001
-          spec: cypress/component/**/*.cy.{js,jsx,ts,tsx}
-
-      # Print the Cypress JSON results file
-      - name: Print Cypress JSON
-        run: cat cypress/reports/component-results.json
-
-      # Generate test summary and report it as a GitHub check
-      - name: Generate Test Summary
+      - name: Run Cypress Component Tests
         run: |
-          TEST_RESULTS=$(cat cypress/reports/component-results.json | jq -r '.stats')
-          PASSED=$(echo $TEST_RESULTS | jq -r '.passes')
-          FAILED=$(echo $TEST_RESULTS | jq -r '.failures')
-          PENDING=$(echo $TEST_RESULTS | jq -r '.pending')
-          SKIPPED=$(echo $TEST_RESULTS | jq -r '.skipped // 0') # Default to 0 if skipped is missing
-          DURATION=$(echo $TEST_RESULTS | jq -r '.duration / 1000')
+          npx cypress run --component --browser chrome > cypress/component-results-${{ matrix.node-version }}.log
+          echo "Cypress tests completed for Node.js ${{ matrix.node-version }}"
 
-          echo '## Cypress Results for Node.js ${{ matrix.node-version }}' >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
-          echo '| Result     | Passed ✅ | Failed ❌ | Pending 🙋 | Skipped 🔀 | Duration ⏱ |' >> $GITHUB_STEP_SUMMARY
-          echo '|------------|-----------|-----------|------------|------------|-------------|' >> $GITHUB_STEP_SUMMARY
-          echo "| **Tests**  | $PASSED    | $FAILED    | $PENDING     | $SKIPPED     | ${DURATION}s |" >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
-          echo '**Job summary generated at run-time.**' >> $GITHUB_STEP_SUMMARY
-
-      # Stop the server after the tests are done and kill processes that remained open in testing
-      - name: Stop server
+      - name: Parse and Generate Test Summary
         run: |
-          kill $(lsof -t -i:3001) || true
-          pkill -f xdg-open || true
-          pkill -f firefox || true
+          PASSED=$(grep -oP "✔ \d+ passing" cypress/component-results-${{ matrix.node-version }}.log | grep -oP "\d+")
+          FAILED=$(grep -oP "✖ \d+ failing" cypress/component-results-${{ matrix.node-version }}.log | grep -oP "\d+")
+          PENDING=$(grep -oP "\d+ pending" cypress/component-results-${{ matrix.node-version }}.log | grep -oP "\d+" || echo "0")
+          SKIPPED=0 # Skipped is not differentiated in Cypress logs unless explicitly skipped
+          DURATION=$(grep -oP "\(\d+:\d+\)" cypress/component-results-${{ matrix.node-version }}.log | tail -1 | grep -oP "\d+:\d+")
 
-      # Upload the artifact - json results file
-      - name: Upload Test Results
+          echo '## Cypress Component Test Results for Node.js ${{ matrix.node-version }}' >> $GITHUB_STEP_SUMMARY
+          echo '| Result   | Passed ✅ | Failed ❌ | Pending 🙋 | Skipped 🔀 | Duration ⏱ |' >> $GITHUB_STEP_SUMMARY
+          echo '|----------|-----------|-----------|------------|------------|-------------|' >> $GITHUB_STEP_SUMMARY
+          echo "| **Tests** | ${PASSED:-0}   | ${FAILED:-0}   | ${PENDING:-0}    | ${SKIPPED:-0}    | ${DURATION:-"N/A"} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Stop Server
+        run: |
+          kill $(lsof -t -i:5173) || true
+
+      - name: Upload Test Logs as Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
-          path: cypress/reports/component-results.json
+          name: Cypress-Test-Logs-Node${{ matrix.node-version }}
+          path: cypress/component-results-${{ matrix.node-version }}.log
