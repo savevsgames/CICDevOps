@@ -37,13 +37,13 @@ jobs:
       - name: Initial Polling to Render can go here if deployment is slow - TBD
         run: sleep 10
 
-      # Step 6: Wait for Deployment for Node.js 18.x
-      - name: Wait for Deployment for Node.js 18.x
-        run: npx wait-on https://cicdevops.onrender.com
-
-      # Step 7: Additional wait to ensure deployment is fully ready
+      # Step 6: Additional wait to ensure deployment is fully ready
       - name: Wait 3 Minutes
         run: sleep 180
+
+      # Step 7: Wait for Deployment for Node.js 18.x
+      - name: Wait for Deployment for Node.js 18.x
+        run: npx wait-on https://cicdevops.onrender.com
 
       # Step 8: Run Cypress Tests for Node.js 18.x
       - name: Run Cypress Tests for Node.js 18.x
@@ -105,16 +105,16 @@ jobs:
         run: curl "$deploy_url"
 
       # Step 5: Initial Polling to Render can go here if deployment is slow
-      - name: Initial Polling to Render can go here if deployment is slow
+      - name: Initial Polling to Render can go here if deployment is slow - TBD
         run: sleep 10
 
-      # Step 6: Wait for Deployment for Node.js 20.x
-      - name: Wait for Deployment for Node.js 20.x
-        run: npx wait-on https://cicdevops.onrender.com
-
-      # Step 7: Additional wait to ensure deployment is fully ready
+      # Step 6: Additional wait to ensure deployment is fully ready
       - name: Wait 3 Minutes
         run: sleep 180
+
+      # Step 7: Wait for Deployment for Node.js 20.x
+      - name: Wait for Deployment for Node.js 20.x
+        run: npx wait-on https://cicdevops.onrender.com
 
       # Step 8: Run Cypress Tests for Node.js 20.x
       - name: Run Cypress Tests for Node.js 20.x
@@ -176,16 +176,16 @@ jobs:
         run: curl "$deploy_url"
 
       # Step 5: Initial Polling to Render can go here if deployment is slow
-      - name: Initial Polling to Render can go here if deployment is slow
+      - name: Initial Polling to Render can go here if deployment is slow - TBD
         run: sleep 10
 
-      # Step 6: Wait for Deployment for Node.js 22.x
-      - name: Wait for Deployment for Node.js 22.x
-        run: npx wait-on https://cicdevops.onrender.com
-
-      # Step 7: Additional wait to ensure deployment is fully ready
+      # Step 6: Additional wait to ensure deployment is fully ready
       - name: Wait 3 Minutes
         run: sleep 180
+
+      # Step 7: Wait for Deployment for Node.js 22.x
+      - name: Wait for Deployment for Node.js 22.x
+        run: npx wait-on https://cicdevops.onrender.com
 
       # Step 8: Run Cypress Tests for Node.js 22.x
       - name: Run Cypress Tests for Node.js 22.x
